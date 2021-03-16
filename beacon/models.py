@@ -36,6 +36,11 @@ class Phenotype(models.Model):
     #: Link to case ID.
     case_id = models.ForeignKey(Case, help_text="Case to which this phenotype belongs.")
 
+    """
+    """
+    def get_coarse_phenotype(self):
+        """"""
+
 
 class Case(models.Model):
     """
@@ -117,8 +122,8 @@ class MetadataBeaconDataset(models.Model):
     #: Assembly identifier 	- "GRCh38"
     assembly_id = models.CharField()
     #: The time the dataset was created (ISO 8601 format). 	- "2012-07-19 or 2017-01-17T20:33:40Z"
-    create_date_time = models.CharField()
+    create_date_time = models.DateTimeField()
     #: The time the dataset was updated in (ISO 8601 format). - "2012-07-19 or 2017-01-17T20:33:40Z"
-    update_date_time = models.CharField()
+    update_date_time = models.DateTimeField()
     #: Beacon ID which this organisation hosts. 
     beacon_id = models.ForeignKey(MetadataBeacon, help_text="Beacon which this organisation hosts.")
