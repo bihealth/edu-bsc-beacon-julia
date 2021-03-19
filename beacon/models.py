@@ -27,8 +27,6 @@ class Variant(models.Model):
             models.Index(fields=["release", "chromosome", "start", "end", "reference", "alternative"])
         ]
 
-    def get_variant(self, filter):
-
 
 class Phenotype(models.Model):
     """

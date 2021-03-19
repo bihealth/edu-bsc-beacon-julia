@@ -28,11 +28,3 @@ admin.site.register(
     )
 )
 
-class Logging():
-    logger = logging.getLogger()
-    handler = logging.Handler()
-
-    def get_logs(self):
-
-    def display_logs(self):
-
