@@ -1,3 +1,9 @@
+from django.shortcuts import render
+
+# Create your views here.
+from django.http import HttpResponse, HttpRequest
+from django.views import View
+
 from .models import (
     Variant,
     Phenotype,
@@ -11,62 +17,43 @@ from .models import (
 )
 
 
-class JSONResponse():
-
-    def create_info_response(self):
+class CaseInfoEndpoint(View):
+    def get(self, request, *args, **kwargs):
         """
 
-        :rtype: object
-         """
-
-    def create_query_response(self):
-        """
-
-        :rtype: object
+        :rtype: JSONResponse
         """
 
 
-class CaseInfoEndpoint():
-    def get(self):
+class CaseQueryEndpoint(View):
+
+    def post(self, request, *args, **kwargs):
         """
 
-        :rtype: object
+        :rtype: JSONResponse
         """
 
-    def post(self):
+    def _process_query(self, query):
+        """
+        input: query string from request
+        checks if input is valid
+
+        :rtype: chr, pos, ref, alt
         """
 
-        :rtype: object
+    def _authenticate(self, key):
+        """
+        authenticate client by comparing key to consortium
+        :rtype: bool permission, visibility level
         """
 
-
-class CaseQueryEndpoint():
-
-    def get(self):
-        """
-
-        :rtype: object
-        """
-
-    def post(self):
+    def _get_filter(self, vis_level):
         """
 
         :rtype: object
         """
 
-    def authenticate(self):
-        """
-
-        :rtype: object
-        """
-
-    def get_filter(self):
-        """
-
-        :rtype: object
-        """
-
-    def get_log_statistics(self):
+    def _check_access_limit(self):
         """
 
         :rtype: object
