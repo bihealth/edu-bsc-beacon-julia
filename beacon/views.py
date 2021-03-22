@@ -1,9 +1,8 @@
 from django.shortcuts import render
-
-# Create your views here.
 from django.http import HttpResponse, HttpRequest
 from django.views import View
 from Django.DB import models
+import logging
 
 
 from .models import (
@@ -20,7 +19,9 @@ from .models import (
 
 
 class CaseInfoEndpoint(View):
-    def get(self, request, *args, **kwargs):
+    logger = logging.getLogger(__name__)
+    
+    def get(self, request, *args, **kwargs):       
         """
         get method for info endpoint
         callable through "curl https://host/"
@@ -30,6 +31,7 @@ class CaseInfoEndpoint(View):
 
 
 class CaseQueryEndpoint(View):
+    logger = logging.getLogger(__name__)
 
     def post(self, request, *args, **kwargs):
         """
