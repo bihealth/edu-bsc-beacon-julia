@@ -51,7 +51,7 @@ class Case(models.Model):
     name = models.CharField()
     #: Index of this case.
     index = models.IntegerField()
-    #: pedigree 
+    #: pedigree
     pedigree = JSONField()
 
 
@@ -76,6 +76,16 @@ class Consortium(models.Model):
     visibility_level = models.CharField()
     #: Access limit per day
     access_limit = models.IntegerField()
+
+"""class Logging(models.Model):
+    #: consortium.
+    consortium_id = models.ForeignKey(Consortium, help_text="Consortium to which this object belongs.")
+    #: Authentication key
+    date = models.CharField()
+    #: Level of visibility of the variant data
+    time = models.CharField()
+    #: Access limit per day
+   access_limit = models.IntegerField()"""
 
 
 class ProjectConsortium(models.Model):
@@ -103,12 +113,12 @@ class MetadataBeaconOrganisation(models.Model):
     """
     #: Unique identifier of the organization.
     beacon_org_id = models.CharField()
-    #: Name of the organization.	
+    #: Name of the organization.
     name = models.CharField()
     # : URL with the contact for the beacon operator/maintainer, e.g. link to a contact form (RFC 3986 format) or an
     # email (RFC 2368 format).
     contact_url = models.CharField()
-    #: Beacon ID which this organisation hosts. 
+    #: Beacon ID which this organisation hosts.
     beacon_id = models.ForeignKey(MetadataBeacon, help_text="Beacon which this organisation hosts.")
 
 
@@ -117,7 +127,7 @@ class MetadataBeaconDataset(models.Model):
     """
     #: Unique identifier of the dataset.
     beacon_data_id = models.CharField()
-    #: Name of the dataset.	
+    #: Name of the dataset.
     name = models.CharField()
     #: Assembly identifier 	- "GRCh38"
     assembly_id = models.CharField()
@@ -125,5 +135,5 @@ class MetadataBeaconDataset(models.Model):
     create_date_time = models.DateTimeField()
     #: The time the dataset was updated in (ISO 8601 format). - "2012-07-19 or 2017-01-17T20:33:40Z"
     update_date_time = models.DateTimeField()
-    #: Beacon ID which this organisation hosts. 
+    #: Beacon ID which this organisation hosts.
     beacon_id = models.ForeignKey(MetadataBeacon, help_text="Beacon which this organisation hosts.")

@@ -1,10 +1,11 @@
 from django.shortcuts import render
+
+# Create your views here.
+from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 from django.views import View
 from Django.DB import models
 import logging
-
-
 from .models import (
     Variant,
     Phenotype,
@@ -19,19 +20,27 @@ from .models import (
 
 
 class CaseInfoEndpoint(View):
-    logger = logging.getLogger(__name__)
-    
-    def get(self, request, *args, **kwargs):       
+
+    def get(self, request, *args, **kwargs):
         """
         get method for info endpoint
         callable through "curl https://host/"
         :param request:
         :return: JSONResponse
         """
+        # query DB
+        # return JSONResponse
 
 
 class CaseQueryEndpoint(View):
-    logger = logging.getLogger(__name__)
+
+    def get(self, request, *args, **kwargs):
+        """
+        get method for query endpoint
+        callable through: curl "referenceName=1&start=14929&referenceBases=A&alternateBases=G&key=password1234" https://localhost:5000/query
+        :param request:
+        :rtype: JSONResponse
+        """
 
     def post(self, request, *args, **kwargs):
         """
