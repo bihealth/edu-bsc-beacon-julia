@@ -12,7 +12,7 @@ from .models import (
     Consortium,
     ProjectConsortium,
     MetadataBeacon,
-    MetadataBeaconOrganisation,
+    MetadataBeaconOrganization,
     MetadataBeaconDataset,
 )
 
@@ -26,7 +26,7 @@ admin.site.register(
         Consortium,
         ProjectConsortium,
         MetadataBeacon,
-        MetadataBeaconOrganisation,
+        MetadataBeaconOrganization,
         MetadataBeaconDataset,
     )
 )

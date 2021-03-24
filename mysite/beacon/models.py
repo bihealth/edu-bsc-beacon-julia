@@ -94,7 +94,8 @@ class ProjectConsortium(models.Model):
     #: The project containing this consortium.
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
     #: The consortium containing this project.
-    consortium_id = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which this object belongs.")
+    consortium_id = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which this "
+                                                                                      "object belongs.")
 
 
 class MetadataBeacon(models.Model):
@@ -108,7 +109,7 @@ class MetadataBeacon(models.Model):
     api_version = models.CharField(max_length=255)
 
 
-class MetadataBeaconOrganisation(models.Model):
+class MetadataBeaconOrganization(models.Model):
     """
     """
     #: Unique identifier of the organization.
@@ -118,8 +119,9 @@ class MetadataBeaconOrganisation(models.Model):
     # : URL with the contact for the beacon operator/maintainer, e.g. link to a contact form (RFC 3986 format) or an
     # email (RFC 2368 format).
     contact_url = models.CharField(max_length=255)
-    #: Beacon ID which this organisation hosts.
-    beacon_id = models.ForeignKey(MetadataBeacon, on_delete=models.CASCADE, help_text="Beacon which this organisation hosts.")
+    #: Beacon ID which this organization hosts.
+    beacon_id = models.ForeignKey(MetadataBeacon, on_delete=models.CASCADE, help_text="Beacon which this organization "
+                                                                                      "hosts.")
 
 
 class MetadataBeaconDataset(models.Model):
@@ -136,4 +138,5 @@ class MetadataBeaconDataset(models.Model):
     #: The time the dataset was updated in (ISO 8601 format). - "2012-07-19 or 2017-01-17T20:33:40Z"
     update_date_time = models.DateTimeField()
     #: Beacon ID which this organisation hosts.
-    beacon_id = models.ForeignKey(MetadataBeacon, on_delete=models.CASCADE, help_text="Beacon which this organisation hosts.")
+    beacon_id = models.ForeignKey(MetadataBeacon, on_delete=models.CASCADE, help_text="Beacon which this dataset "
+                                                                                      "contains.")

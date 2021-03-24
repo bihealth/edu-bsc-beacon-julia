@@ -11,9 +11,10 @@ from .models import (
     Consortium,
     ProjectConsortium,
     MetadataBeacon,
-    MetadataBeaconOrganisation,
+    MetadataBeaconOrganization,
     MetadataBeaconDataset,
 )
+from .json_structures import AlleleRequest, AlleleResponse
 
 
 class CaseInfoEndpoint(View):
@@ -25,30 +26,41 @@ class CaseInfoEndpoint(View):
         :param request:
         :return: JSONResponse
         """
-        # query DB
-        all_entries = MetadataBeacon.objects.all()
-        beacon_id = all_entries[0].beacon_id
-        name = all_entries[0].name
-        api_version = all_entries[0].api_version
-        org = MetadataBeaconOrganisation.objects.all()
-        org_id = org[0].beacon_org_id
-        org_name = org[0].name
-        contact_url = org[0].api_version
-        return JsonResponse({"id": beacon_id,
-                             "name": name,
-                             "apiVersion": api_version,
-                             "organisation": { "id": ,
-                                               "name":
-                             },
-                             "datasets": { "id": ,
-                                          "name": ,
-                                          "assemblyId": ,
-                                          "createDateTime": ,
-                                          "updateDateTime": ,
-
+        # try:
+        beacons = MetadataBeacon.objects.all()
+        beacon_id = beacons[0].beacon_id
+        name = beacons[0].name
+        api_version = beacons[0].api_version
+        output_json = {"beaconID": beacon_id,
+                       "name": name,
+                       "apiVersion": api_version}
+        datasets = MetadataBeaconDataset.objects.filter(beacon_id=beacon_id)
+        datasets_dict_list = []
+        for d in datasets:
+            beacon_data_id = d.beacon_data_id
+            data_name = d.name
+            assembly_id = d.assembly_id
+            create_date_time = d.create_date_time
+            update_date_time = d.update_date_time
+            datasets_dict = {"id": beacon_data_id,
+                             "name": data_name,
+                             "assemblyId": assembly_id,
+                             "createDateTime": create_date_time,
+                             "updateDateTime": update_date_time,
                              }
-                             }
-                            )
+            datasets_dict_list.append(datasets_dict)
+        output_json["dataset"] = datasets_dict_list
+        organisations = MetadataBeaconOrganization.objects.filter(beacon_id=beacon_id)
+        org_id = organisations[0].beacon_org_id
+        org_name = organisations[0].name
+        contact_url = organisations[0].contact_url
+        dict_org = {"id": org_id,
+                    "name": org_name,
+                    "contactURL": contact_url
+                    }
+        output_json["organization"] = dict_org
+        # except IndexError:
+        return JsonResponse(output_json, json_dumps_params={'indent': 2})
 
 
 class CaseQueryEndpoint(View):
@@ -66,9 +78,17 @@ class CaseQueryEndpoint(View):
         end = request.GET.get("end")
         reference = request.GET.get("referenceBases")
         alternative = request.GET.get("alternateBases")
+        key = request.headers.get("Authorization")
         if self._check_query_input(chromosome, start, end, reference, alternative):
             return HttpResponseBadRequest("Bad request: The input format is invalid.")
-        return JsonResponse({'foo': 'hello'})
+        consortium = self._authenticate(key)
+        if consortium:
+            return HttpResponse('Unauthorized', status=401)
+        # if self._check_access_limit():
+        allele_request = AlleleRequest(chromosome, start, end, reference, alternative)
+        allele_response = self._query_variant(consortium)
+        output_json = {allele_request, allele_response}
+        return JsonResponse(output_json, json_dumps_params={'indent': 2})
 
     def post(self, request, *args, **kwargs):
         """
@@ -82,9 +102,18 @@ class CaseQueryEndpoint(View):
         end = request.POST.get("end")
         reference = request.POST.get("referenceBases")
         alternative = request.POST.get("alternateBases")
+        key = request.headers.get("Authorization")
+        key = request.headers.get("Authorization")
         if self._check_query_input(chromosome, start, end, reference, alternative):
             return HttpResponseBadRequest("Bad request: The input format is invalid.")
-        return JsonResponse({chromosome: 'bar'})
+        consortium = self._authenticate(key)
+        if consortium:
+            return HttpResponse('Unauthorized', status=401)
+        # if self._check_access_limit():
+        allele_request = AlleleRequest(chromosome, start, end, reference, alternative)
+        allele_response = self._query_variant(consortium)
+        output_json = {allele_request, allele_response}
+        return JsonResponse(output_json, json_dumps_params={'indent': 2})
 
     def _check_query_input(self, chromosome, start, end, reference, alternative):
         """
@@ -117,18 +146,61 @@ class CaseQueryEndpoint(View):
     def _authenticate(self, key):
         """
         authenticate client by comparing key to consortium
-        :rtype: visibility level
+        :rtype: bool
         """
+        consortium = Consortium.objects.filter(key=key)
+        if consortium is None:
+            return 1
+        else:
+            return consortium
 
-    def _check_access_limit(self):
+    def _check_access_limit(self, consortium_pk):
         """
         # logging in setting by file?
         :rtype: object
         """
+        return 0
 
-    def _get_query_set(self, vis_level):
+    def _query_variant(self, consortium):
         """
 
         :rtype: array of query sets
 
         """
+        projects = ProjectConsortium.objects.filter(consortium_id=consortium.id).get(project_id)
+        cases = Case.objects.filter(project_id=projects.id)
+        variant_ids = Variant.objects.filter(release=release, chromosome=chromosome, start=start, end=end,
+                                             reference=reference, alternative=alternative, case_id=cases.id).get(id)
+        if variant_ids is None:
+            return AlleleResponse(False, None, None, None, None)
+        if consortium.visibility_level == 25:
+            return AlleleResponse(True, None, None, None, None)
+        if consortium.visibility_level == 20:
+            if len(variant_ids) > 10:
+                return AlleleResponse(True, True, None, None, None)
+            else:
+                return AlleleResponse(True, False, None, None, None)
+        if consortium.visibility_level == 15:
+            allele_count = len(variant_ids)
+            if allele_count > 10:
+                return AlleleResponse(True, True, allele_count, None, None)
+            else:
+                return [True, False, allele_count, None, None]
+        if consortium.visibility_level == 10:
+            allele_count = len(variant_ids)
+            phenotypes = Phenotype.objects.filter(case_id=cases.id).get(phenotype)
+            coarse_phenotypes = []
+            # for p in phenotypes: coarse_phenotype.append(p.get_coarse_phenotype())
+            if allele_count > 10:
+                return AlleleResponse(True, True, allele_count, coarse_phenotypes, None)
+            else:
+                return AlleleResponse(True, False, allele_count, coarse_phenotypes, None)
+        if consortium.visibility_level == 5:
+            allele_count = len(variant_ids)
+            phenotypes = Phenotype.objects.filter(case_id=cases.id).get(phenotype)
+            coarse_phenotypes = []
+            # for p in phenotypes: coarse_phenotype.append(p.get_coarse_phenotype())
+            if allele_count > 10:
+                return AlleleResponse(True, True, allele_count, coarse_phenotypes, phenotypes)
+            else:
+                return AlleleResponse(True, False, allele_count, coarse_phenotypes, phenotypes)
