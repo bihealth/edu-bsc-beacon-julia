@@ -76,6 +76,8 @@ class Consortium(models.Model):
     visibility_level = models.CharField(max_length=255)
     #: Access limit per day
     access_limit = models.IntegerField()
+    #: The project containing this consortium.
+    projects = models.ManyToManyField(Project, help_text="Project to which this object belongs.")
 
 """class Logging(models.Model):
     #: consortium.
@@ -86,16 +88,6 @@ class Consortium(models.Model):
     time = models.CharField()
     #: Access limit per day
    access_limit = models.IntegerField()"""
-
-
-class ProjectConsortium(models.Model):
-    """
-    """
-    #: The project containing this consortium.
-    project_id = models.ForeignKey(Project, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
-    #: The consortium containing this project.
-    consortium_id = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which this "
-                                                                                      "object belongs.")
 
 
 class MetadataBeacon(models.Model):
