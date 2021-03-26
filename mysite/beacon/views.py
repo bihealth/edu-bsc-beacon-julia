@@ -58,7 +58,6 @@ class CaseInfoEndpoint(View):
                     "contactURL": contact_url
                     }
         output_json["organization"] = dict_org
-        # except IndexError:
         return JsonResponse(output_json, json_dumps_params={'indent': 2})
 
 
@@ -89,7 +88,8 @@ class CaseQueryEndpoint(View):
         # if self._check_access_limit():
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative).create_dict()
         query_parameters = self._query_variant(consortium[0], chromosome, start, end, reference, alternative)
-        allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2], query_parameters[3], query_parameters[4]).create_dict()
+        allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2],
+                                         query_parameters[3], query_parameters[4]).create_dict()
         output_json = {"alleleRequest": allele_request, "datasetAlleleResponses": allele_response}
         return JsonResponse(output_json, json_dumps_params={'indent': 2})
 
@@ -117,10 +117,10 @@ class CaseQueryEndpoint(View):
         # if self._check_access_limit():
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative).create_dict()
         query_parameters = self._query_variant(consortium[0], chromosome, start, end, reference, alternative)
-        allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2], query_parameters[3], query_parameters[4]).create_dict()
+        allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2],
+                                         query_parameters[3], query_parameters[4]).create_dict()
         output_json = {"alleleRequest": allele_request, "datasetAlleleResponses": allele_response}
         return JsonResponse(output_json, json_dumps_params={'indent': 2})
-
 
     def _check_query_input(self, chromosome, start, end, reference, alternative):
         """
@@ -172,7 +172,9 @@ class CaseQueryEndpoint(View):
 
         """
         variants = Variant.objects.filter(chromosome=chromosome, start=start, reference=reference, end=end,
-                                          alternative=alternative, case_id__project__consortium=consortium.id).select_related("case_id__project__consortium").values("id", "case_id")
+                                          alternative=alternative,
+                                          case_id__project__consortium=consortium.id).select_related(
+            "case_id__project__consortium").values("id", "case_id")
         print(variants)
         if not list(variants):
             return False, None, None, None, None
@@ -192,10 +194,10 @@ class CaseQueryEndpoint(View):
         if consortium.visibility_level == "10":
             allele_count = len(variants)
             phenotypes = []
-            for p in Phenotype.objects.filter(case_id=variants[0]["case_id"]):
-                phenotypes.append(p.phenotype)
             coarse_phenotypes = []
-            # for p in phenotypes: coarse_phenotype.append(p.get_coarse_phenotype())
+            for p in Phenotype.objects.filter(case_id=variants[0]["case_id"]):
+                phenotypes.append({p.phenotype: p.get_phenotype_name(p.phenotype)})
+                coarse_phenotypes.append(p.get_coarse_phenotype())
             if allele_count > 10:
                 return True, True, allele_count, coarse_phenotypes, None
             else:
@@ -203,10 +205,10 @@ class CaseQueryEndpoint(View):
         if consortium.visibility_level == "5":
             allele_count = len(variants)
             phenotypes = []
-            for p in Phenotype.objects.filter(case_id=variants[0]["case_id"]):
-                phenotypes.append(p.phenotype)
             coarse_phenotypes = []
-            # for p in phenotypes: coarse_phenotype.append(p.get_coarse_phenotype())
+            for p in Phenotype.objects.filter(case_id=variants[0]["case_id"]):
+                phenotypes.append({p.phenotype: p.get_phenotype_name(p.phenotype)})
+                coarse_phenotypes.append(p.get_coarse_phenotype())
             if allele_count > 10:
                 return True, True, allele_count, coarse_phenotypes, phenotypes
             else:

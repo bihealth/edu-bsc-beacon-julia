@@ -1,4 +1,6 @@
 from django.db import models
+import networkx
+import obonet
 
 
 class Project(models.Model):
@@ -61,8 +63,26 @@ class Phenotype(models.Model):
 
     """
     """
-    def get_coarse_phenotype(self):
+    def get_coarse_phenotype(self, url="http://purl.obolibrary.org/obo/hp.obo"):
         """"""
+        try:
+            hpo_graph = obonet.read_obo(url)
+            phenotype_superterms = list(networkx.descendants(hpo_graph, self.phenotype))
+            if len(phenotype_superterms) > 4:
+                return {phenotype_superterms[4]: self.get_phenotype_name(phenotype_superterms[4])}
+            else:
+                return {self.phenotype: self.get_phenotype_name(self.phenotype)}
+        except (ValueError, networkx.exception.NetworkXError, KeyError):
+            return None
+
+    def get_phenotype_name(self, phenotype, url="http://purl.obolibrary.org/obo/hp.obo"):
+        try:
+            hpo_graph = obonet.read_obo(url)
+            id_to_name = {id_: data.get('name') for id_, data in hpo_graph.nodes(data=True)}
+            return id_to_name[phenotype]
+        except (ValueError, KeyError):
+            return None
+
 
 
 class Consortium(models.Model):
