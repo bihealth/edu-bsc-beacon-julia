@@ -1,18 +1,20 @@
 class AlleleRequest:
 
-    def __init__(self, chromosome, start, end, reference, alternative):
+    def __init__(self, chromosome, start, end, reference, alternative, release):
         self.chromosome = chromosome
         self.start = start
         self.end = end
         self.reference = reference
         self.alternative = alternative
+        self.release = release
 
     def create_dict(self):
         allele_request_dict = {"referenceName": self.chromosome,
                                "start": self.start,
                                "end": self.end,
                                "referenceBases": self.reference,
-                               "alternateBases": self.alternative
+                               "alternateBases": self.alternative,
+                               "assemblyId": self.release
                                }
 
         return allele_request_dict
@@ -29,9 +31,10 @@ class AlleleResponse:
 
     def create_dict(self):
         allele_response_dict = {"exists": self.exists,
-                                "variantCount>10": self.variant_count_greater_ten,
-                                "variantCount": self.variant_count,
+                                "alleleCount>10": self.variant_count_greater_ten,
+                                "alleleCount": self.variant_count,
                                 "coarsePhenotype": self.coarse_phenotype,
-                                "phenotype": self.phenotype
+                                "phenotype": self.phenotype,
+                                "error": None
                                 }
         return allele_response_dict

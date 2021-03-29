@@ -21,9 +21,13 @@ class Case(models.Model):
     #: Name of this case.
     name = models.CharField(max_length=255)
     #: Index of this case.
-    index = models.IntegerField()
+    index = models.CharField(max_length=255)
     #: pedigree
     pedigree = models.JSONField()
+
+    def get_members(self):
+        """Return list of members in ``pedigree``."""
+        return sorted([x["patient"] for x in self.pedigree])
 
 
 class Variant(models.Model):
@@ -43,7 +47,7 @@ class Variant(models.Model):
     #: Variant coordinates - alternative
     alternative = models.CharField(max_length=512)
     #: Link to Case ID.
-    case_id = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this variant belongs.")
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this variant belongs.")
     #: Genotype information as JSONB
     genotype = models.JSONField()
 
@@ -52,6 +56,9 @@ class Variant(models.Model):
             models.Index(fields=["release", "chromosome", "start", "end", "reference", "alternative"])
         ]
 
+    def get_allele_count(self, case_index):
+        return self.genotype[case_index]["gt"].count("1")
+
 
 class Phenotype(models.Model):
     """
@@ -59,30 +66,22 @@ class Phenotype(models.Model):
     #: Phenotype information using HPO
     phenotype = models.CharField(max_length=255)
     #: Link to case ID.
-    case_id = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
+    case = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
 
     """
     """
+
     def get_coarse_phenotype(self, url="http://purl.obolibrary.org/obo/hp.obo"):
         """"""
         try:
             hpo_graph = obonet.read_obo(url)
             phenotype_superterms = list(networkx.descendants(hpo_graph, self.phenotype))
             if len(phenotype_superterms) > 4:
-                return {phenotype_superterms[4]: self.get_phenotype_name(phenotype_superterms[4])}
+                return phenotype_superterms[4]
             else:
-                return {self.phenotype: self.get_phenotype_name(self.phenotype)}
+                return self.phenotype
         except (ValueError, networkx.exception.NetworkXError, KeyError):
             return None
-
-    def get_phenotype_name(self, phenotype, url="http://purl.obolibrary.org/obo/hp.obo"):
-        try:
-            hpo_graph = obonet.read_obo(url)
-            id_to_name = {id_: data.get('name') for id_, data in hpo_graph.nodes(data=True)}
-            return id_to_name[phenotype]
-        except (ValueError, KeyError):
-            return None
-
 
 
 class Consortium(models.Model):
@@ -99,15 +98,40 @@ class Consortium(models.Model):
     #: The project containing this consortium.
     projects = models.ManyToManyField(Project, help_text="Project to which this object belongs.")
 
-"""class Logging(models.Model):
-    #: consortium.
-    consortium_id = models.ForeignKey(Consortium, help_text="Consortium to which this object belongs.")
+
+class RemoteSide(models.Model):
+    """
+    """
+    #: Name of the remote side.
+    name = models.CharField(max_length=255)
     #: Authentication key
-    date = models.CharField()
+    key = models.CharField(max_length=255)
     #: Level of visibility of the variant data
-    time = models.CharField()
+    visibility_level = models.CharField(max_length=255)
     #: Access limit per day
-   access_limit = models.IntegerField()"""
+    access_limit = models.IntegerField()
+    #: The consortium containing this remote side.
+    consortium = models.ManyToManyField(Consortium, help_text="Consortium to which this object belongs.")
+
+
+class LogEntry(models.Model):
+    """
+
+    """
+    #: IP address client
+    ip_address = models.CharField(max_length=15)
+    #: User identifier
+    user_identifier = models.CharField(max_length=255)
+    #: Frank (=consortium)
+    frank = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which the client belongs to.")
+    #: Date and time of request
+    date_time = models.DateTimeField()
+    #: Request
+    request = models.CharField(max_length=255)
+    #: Status code
+    status_code = models.IntegerField()
+    #: Size response object in bytes
+    response_size = models.IntegerField()
 
 
 class MetadataBeacon(models.Model):

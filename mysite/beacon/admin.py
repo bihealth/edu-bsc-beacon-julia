@@ -10,10 +10,11 @@ from .models import (
     Case,
     Project,
     Consortium,
-    #ProjectConsortium,
+    LogEntry,
     MetadataBeacon,
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
+    RemoteSide
 )
 
 # Register your models here.
@@ -24,9 +25,10 @@ admin.site.register(
         Case,
         Project,
         Consortium,
-        #ProjectConsortium,
+        LogEntry,
         MetadataBeacon,
         MetadataBeaconOrganization,
         MetadataBeaconDataset,
+        RemoteSide
     )
 )
