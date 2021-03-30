@@ -9,11 +9,13 @@ from .models import (
     Case,
     Project,
     Consortium,
+    LogEntry,
     MetadataBeacon,
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
 )
 from .json_structures import AlleleRequest, AlleleResponse
+from datetime import datetime
 
 
 class CaseInfoEndpoint(View):
@@ -58,7 +60,17 @@ class CaseInfoEndpoint(View):
                     "contactURL": contact_url
                     }
         output_json["organization"] = dict_org
-        return JsonResponse(output_json, json_dumps_params={'indent': 2})
+        output = JsonResponse(output_json, json_dumps_params={'indent': 2})
+        log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
+                             user_identifier=request.META.get('USER'),
+                             authuser=Consortium.objects.get(name='public'), date_time=datetime.now(),
+                             request=("%s %s %s" % (
+                                 request.method, request.get_full_path(), request.META["SERVER_PROTOCOL"])),
+                             status_code=output.status_code,
+                             response_size=len(output.content)
+                             )
+        log_entry.save()
+        return output
 
 
 class CaseQueryEndpoint(View):
@@ -71,6 +83,9 @@ class CaseQueryEndpoint(View):
         :param request:
         :rtype: JSONResponse
         """
+        print(request)
+        print(request.get_port)
+        print(request.get_full_path)
         chromosome = request.GET.get("referenceName")
         start = request.GET.get("start")
         end = request.GET.get("end")
@@ -93,12 +108,34 @@ class CaseQueryEndpoint(View):
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
         query_parameters = self._query_variant(consortium[0], chromosome, start, end, reference, alternative, release)
         if query_parameters[0] is False:
-            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0], "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": []}
+            output_json = {"beaconId": beacon_id,
+                           "apiVersion": api_version,
+                           "exists": query_parameters[0],
+                           "error": None,
+                           "alleleRequest": allele_request,
+                           "datasetAlleleResponses": []
+                           }
         else:
             allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2],
-                                         query_parameters[3], query_parameters[4]).create_dict()
-            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0], "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": allele_response}
-        return JsonResponse(output_json, json_dumps_params={'indent': 2})
+                                             query_parameters[3], query_parameters[4]).create_dict()
+            output_json = {"beaconId": beacon_id,
+                           "apiVersion": api_version,
+                           "exists": query_parameters[0],
+                           "error": None, "alleleRequest": allele_request,
+                           "datasetAlleleResponses": allele_response
+                           }
+
+        output = JsonResponse(output_json, json_dumps_params={'indent': 2})
+        log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
+                             user_identifier=request.META.get('USER'),
+                             authuser=consortium[0], date_time=datetime.now(),
+                             request=("%s %s %s" % (
+                             request.method, request.get_full_path(), request.META["SERVER_PROTOCOL"])),
+                             status_code=output.status_code,
+                             response_size=len(output.content)
+                             )
+        log_entry.save()
+        return output
 
     def post(self, request, *args, **kwargs):
         """
@@ -129,12 +166,24 @@ class CaseQueryEndpoint(View):
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
         query_parameters = self._query_variant(consortium[0], chromosome, start, end, reference, alternative, release)
         if query_parameters[0] is False:
-            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0], "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": []}
+            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0],
+                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": []}
         else:
             allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2],
-                                         query_parameters[3], query_parameters[4]).create_dict()
-            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0], "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": allele_response}
-        return JsonResponse(output_json, json_dumps_params={'indent': 2})
+                                             query_parameters[3], query_parameters[4]).create_dict()
+            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0],
+                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": allele_response}
+        output = JsonResponse(output_json, json_dumps_params={'indent': 2})
+        log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
+                             user_identifier=request.META.get('USER'),
+                             authuser=consortium[0], date_time=datetime.now(),
+                             request=("%s %s %s" % (
+                                 request.method, request.body, request.META["SERVER_PROTOCOL"])),
+                             status_code=output.status_code,
+                             response_size=len(output.content)
+                             )
+        log_entry.save()
+        return output
 
     def _check_query_input(self, chromosome, start, end, reference, alternative):
         """
@@ -178,7 +227,7 @@ class CaseQueryEndpoint(View):
         :rtype: object
         """
         access_limit = consortium.access_limit
-        #if LogEntry.objects.filter(frank=consortium)
+        # if LogEntry.objects.filter(frank=consortium)
         return 0
 
     def _query_variant(self, consortium, chromosome, start, end, reference, alternative, release):

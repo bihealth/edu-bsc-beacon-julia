@@ -68,8 +68,10 @@ class Phenotype(models.Model):
     #: Link to case ID.
     case = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
 
-    """
-    """
+    class Meta:
+        indexes = [
+            models.Index(fields=["case"])
+        ]
 
     def get_coarse_phenotype(self, url="http://purl.obolibrary.org/obo/hp.obo"):
         """"""
@@ -122,11 +124,11 @@ class LogEntry(models.Model):
     ip_address = models.CharField(max_length=15)
     #: User identifier
     user_identifier = models.CharField(max_length=255)
-    #: Frank (=consortium)
-    frank = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which the client belongs to.")
+    #: User (=consortium)
+    authuser = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which the client belongs to.")
     #: Date and time of request
     date_time = models.DateTimeField()
-    #: Request
+    #: Request method
     request = models.CharField(max_length=255)
     #: Status code
     status_code = models.IntegerField()
