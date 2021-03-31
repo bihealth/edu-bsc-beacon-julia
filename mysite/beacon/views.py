@@ -8,6 +8,7 @@ from .models import (
     Phenotype,
     Case,
     Project,
+    RemoteSide,
     Consortium,
     LogEntry,
     MetadataBeacon,
@@ -15,6 +16,7 @@ from .models import (
     MetadataBeaconDataset,
 )
 from .json_structures import AlleleRequest, AlleleResponse
+from .queries import (CaseQueryVariant)
 from datetime import datetime
 
 
@@ -83,9 +85,6 @@ class CaseQueryEndpoint(View):
         :param request:
         :rtype: JSONResponse
         """
-        print(request)
-        print(request.get_port)
-        print(request.get_full_path)
         chromosome = request.GET.get("referenceName")
         start = request.GET.get("start")
         end = request.GET.get("end")
@@ -101,12 +100,13 @@ class CaseQueryEndpoint(View):
             key = request.headers["Authorization"]
         else:
             key = "public"
-        consortium = self._authenticate(key)
-        if not list(consortium):
+        remote_side = self._authenticate(key)
+        if not list(remote_side):
             return HttpResponse('Unauthorized', status=401)
         # if self._check_access_limit():
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
-        query_parameters = self._query_variant(consortium[0], chromosome, start, end, reference, alternative, release)
+        query_parameters = self._query_variant(remote_side[0].consortium, chromosome, start, end, reference, alternative,
+                                               release)
         if query_parameters[0] is False:
             output_json = {"beaconId": beacon_id,
                            "apiVersion": api_version,
@@ -130,7 +130,7 @@ class CaseQueryEndpoint(View):
                              user_identifier=request.META.get('USER'),
                              authuser=consortium[0], date_time=datetime.now(),
                              request=("%s %s %s" % (
-                             request.method, request.get_full_path(), request.META["SERVER_PROTOCOL"])),
+                                 request.method, request.get_full_path(), request.META["SERVER_PROTOCOL"])),
                              status_code=output.status_code,
                              response_size=len(output.content)
                              )
@@ -159,20 +159,19 @@ class CaseQueryEndpoint(View):
             key = request.headers["Authorization"]
         else:
             key = "public"
-        consortium = self._authenticate(key)
-        if not list(consortium):
+        remote_side = self._authenticate(key)
+        if not list(remote_side):
             return HttpResponse('Unauthorized', status=401)
         # if self._check_access_limit():
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
-        query_parameters = self._query_variant(consortium[0], chromosome, start, end, reference, alternative, release)
-        if query_parameters[0] is False:
+        query_parameters = self._query_variant(remote_side[0].consortium, chromosome, start, end, reference, alternative,
+                                               release)
+        if query_parameters["exists"] is False:
             output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0],
                            "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": []}
         else:
-            allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2],
-                                             query_parameters[3], query_parameters[4]).create_dict()
             output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0],
-                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": allele_response}
+                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": query_parameters}
         output = JsonResponse(output_json, json_dumps_params={'indent': 2})
         log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
                              user_identifier=request.META.get('USER'),
@@ -218,15 +217,15 @@ class CaseQueryEndpoint(View):
         authenticate client by comparing key to consortium
         :rtype: bool
         """
-        consortium = Consortium.objects.filter(key=key)
-        return consortium
+        remote_side = RemoteSide.objects.filter(key=key)
+        return remote_side
 
-    def _check_access_limit(self, consortium):
+    def _check_access_limit(self, remote_side):
         """
         # logging in setting by file?
         :rtype: object
         """
-        access_limit = consortium.access_limit
+        access_limit = remote_side.access_limit
         # if LogEntry.objects.filter(frank=consortium)
         return 0
 
@@ -236,38 +235,57 @@ class CaseQueryEndpoint(View):
         :rtype: array of query sets
 
         """
-        variants = Variant.objects.filter(chromosome=chromosome, start=start, reference=reference, end=end,
-                                          alternative=alternative, release=release,
-                                          case__project__consortium=consortium.id)
-        exists = False
-        allele_count = 0
-        allele_count_greater_ten = False
-        coarse_phenotypes = []
-        phenotypes = []
-        for v in variants:
-            exists = True
-            if consortium.visibility_level == "25":
-                allele_count_greater_ten = None
-                break
-            case_index = Case.objects.filter(id=v.case.id).values("index")
-            allele_count += v.get_allele_count(case_index[0]["index"])
-            if allele_count > 10:
-                allele_count_greater_ten = True
-            if consortium.visibility_level == "20":
-                if allele_count_greater_ten:
-                    allele_count_greater_ten = True
-                    break
-            if consortium.visibility_level == "10":
-                for p in Phenotype.objects.filter(case=v.case):
-                    coarse_phenotypes.append(p.get_coarse_phenotype())
-            if consortium.visibility_level == "5":
-                for p in Phenotype.objects.filter(case=v.case):
-                    phenotypes.append(p.phenotype)
-                    coarse_phenotypes.append(p.get_coarse_phenotype())
-        if int(consortium.visibility_level) >= 20:
-            return exists, allele_count_greater_ten, None, coarse_phenotypes, phenotypes
-        else:
-            return exists, allele_count_greater_ten, allele_count, coarse_phenotypes, phenotypes
+        consortium_dict = {}
+        for c in consortium:
+            if c.visibility_level == "25":
+                consortium_dict[c.name] = CaseQueryVariant.make_query_25(consortium.id,
+                                                                         chromosome,
+                                                                         start,
+                                                                         end,
+                                                                         reference,
+                                                                         alternative,
+                                                                         release)
+            elif c.visibility_level == "20":
+                consortium_dict[c.name] = CaseQueryVariant.make_query_20(consortium.id,
+                                                                         chromosome,
+                                                                         start,
+                                                                         end,
+                                                                         reference,
+                                                                         alternative,
+                                                                         release)
+            elif c.visibility_level == "15":
+                consortium_dict[c.name] = CaseQueryVariant.make_query_15(consortium.id,
+                                                                         chromosome,
+                                                                         start,
+                                                                         end,
+                                                                         reference,
+                                                                         alternative,
+                                                                         release)
+            elif c.visibility_level == "10":
+                consortium_dict[c.name] = CaseQueryVariant.make_query_10(consortium.id,
+                                                                         chromosome,
+                                                                         start,
+                                                                         end,
+                                                                         reference,
+                                                                         alternative,
+                                                                         release)
+            elif c.visibility_level == "5":
+                consortium_dict[c.name] = CaseQueryVariant.make_query_5(consortium.id,
+                                                                        chromosome,
+                                                                        start,
+                                                                        end,
+                                                                        reference,
+                                                                        alternative,
+                                                                        release)
+            else:
+                consortium_dict[c.name] = CaseQueryVariant.make_query_0(consortium.id,
+                                                                        chromosome,
+                                                                        start,
+                                                                        end,
+                                                                        reference,
+                                                                        alternative,
+                                                                        release)
+        return consortium_dict
 
     def _query_metadata(self):
         try:

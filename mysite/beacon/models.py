@@ -91,12 +91,8 @@ class Consortium(models.Model):
     """
     #: Name of the consortium.
     name = models.CharField(max_length=255)
-    #: Authentication key
-    key = models.CharField(max_length=255)
     #: Level of visibility of the variant data
     visibility_level = models.CharField(max_length=255)
-    #: Access limit per day
-    access_limit = models.IntegerField()
     #: The project containing this consortium.
     projects = models.ManyToManyField(Project, help_text="Project to which this object belongs.")
 
@@ -108,8 +104,6 @@ class RemoteSide(models.Model):
     name = models.CharField(max_length=255)
     #: Authentication key
     key = models.CharField(max_length=255)
-    #: Level of visibility of the variant data
-    visibility_level = models.CharField(max_length=255)
     #: Access limit per day
     access_limit = models.IntegerField()
     #: The consortium containing this remote side.
