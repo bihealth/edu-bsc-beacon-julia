@@ -30,6 +30,7 @@ class CaseInfoEndpoint(View):
         :return: JSONResponse
         """
         # try:
+       # with request as r:
         beacons = MetadataBeacon.objects.all()
         beacon_id = beacons[0].beacon_id
         name = beacons[0].name
@@ -63,6 +64,7 @@ class CaseInfoEndpoint(View):
                     }
         output_json["organization"] = dict_org
         output = JsonResponse(output_json, json_dumps_params={'indent': 2})
+        ## if cant fecht client adress
         log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
                              user_identifier=request.META.get('USER'),
                              authuser=Consortium.objects.get(name='public'), date_time=datetime.now(),
@@ -106,6 +108,7 @@ class CaseQueryEndpoint(View):
                 key = request.headers["Authorization"]
             else:
                 key = "public"
+            print(key)
             remote_side = self._authenticate(key)
             if not list(remote_side):
                 output_json["error"] = {"errorCode": 401, "errorMessage": "You are not authorized as a user."}
@@ -137,7 +140,7 @@ class CaseQueryEndpoint(View):
                                  response_size=len(output.content)
                                  )
             log_entry.save()
-            return output
+            return JsonResponse(output_json, json_dumps_params={'indent': 2})
         except UnboundLocalError:
             return output
 
