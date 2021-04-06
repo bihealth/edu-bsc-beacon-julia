@@ -17,7 +17,7 @@ from .models import (
 )
 from .json_structures import AlleleRequest, AlleleResponse
 from .queries import (CaseQueryVariant)
-from datetime import datetime
+from datetime import datetime, date
 
 
 class CaseInfoEndpoint(View):
@@ -85,57 +85,61 @@ class CaseQueryEndpoint(View):
         :param request:
         :rtype: JSONResponse
         """
-        chromosome = request.GET.get("referenceName")
-        start = request.GET.get("start")
-        end = request.GET.get("end")
-        reference = request.GET.get("referenceBases")
-        alternative = request.GET.get("alternateBases")
-        release = request.GET.get("assemblyId")
-        if release is None:
-            release = "GRCh37"
-        beacon_id, api_version = self._query_metadata()
-        if self._check_query_input(chromosome, start, end, reference, alternative):
-            return HttpResponseBadRequest("Bad request: The input format is invalid.")
-        if "Authorization" in request.headers:
-            key = request.headers["Authorization"]
-        else:
-            key = "public"
-        remote_side = self._authenticate(key)
-        if not list(remote_side):
-            return HttpResponse('Unauthorized', status=401)
-        # if self._check_access_limit():
-        allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
-        query_parameters = self._query_variant(remote_side[0].consortium, chromosome, start, end, reference, alternative,
-                                               release)
-        if query_parameters[0] is False:
-            output_json = {"beaconId": beacon_id,
-                           "apiVersion": api_version,
-                           "exists": query_parameters[0],
-                           "error": None,
-                           "alleleRequest": allele_request,
-                           "datasetAlleleResponses": []
-                           }
-        else:
-            allele_response = AlleleResponse(query_parameters[0], query_parameters[1], query_parameters[2],
-                                             query_parameters[3], query_parameters[4]).create_dict()
-            output_json = {"beaconId": beacon_id,
-                           "apiVersion": api_version,
-                           "exists": query_parameters[0],
-                           "error": None, "alleleRequest": allele_request,
-                           "datasetAlleleResponses": allele_response
-                           }
-
-        output = JsonResponse(output_json, json_dumps_params={'indent': 2})
-        log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
-                             user_identifier=request.META.get('USER'),
-                             authuser=consortium[0], date_time=datetime.now(),
-                             request=("%s %s %s" % (
-                                 request.method, request.get_full_path(), request.META["SERVER_PROTOCOL"])),
-                             status_code=output.status_code,
-                             response_size=len(output.content)
-                             )
-        log_entry.save()
-        return output
+        try:
+            chromosome = request.GET.get("referenceName")
+            start = request.GET.get("start")
+            end = request.GET.get("end")
+            reference = request.GET.get("referenceBases")
+            alternative = request.GET.get("alternateBases")
+            release = request.GET.get("assemblyId")
+            if release is None:
+                release = "GRCh37"
+            beacon_id, api_version = self._query_metadata()
+            allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
+            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": None,
+                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": []}
+            if self._check_query_input(chromosome, start, end, reference, alternative):
+                output_json["error"] = {"errorCode": 400, "errorMessage": "The input format is invalid."}
+                output = JsonResponse(output_json, status=400, json_dumps_params={'indent': 2})
+                raise UnboundLocalError()
+            if "Authorization" in request.headers:
+                key = request.headers["Authorization"]
+            else:
+                key = "public"
+            remote_side = self._authenticate(key)
+            if not list(remote_side):
+                output_json["error"] = {"errorCode": 401, "errorMessage": "You are not authorized as a user."}
+                output = JsonResponse(output_json, status=401, json_dumps_params={'indent': 2})
+                raise UnboundLocalError()
+            if self._check_access_limit(remote_side[0]):
+                output_json["error"] = {"errorCode": 403, "errorMessage": "You have exceeded your access limit."}
+                output = JsonResponse(output_json, status=403, json_dumps_params={'indent': 2})
+                raise UnboundLocalError()
+            query_parameters = self._query_variant(remote_side[0].consortium,
+                                                   chromosome,
+                                                   start,
+                                                   end,
+                                                   reference,
+                                                   alternative,
+                                                   release)
+            if query_parameters.exists is False:
+                output_json["exists"] = False
+            else:
+                output_json["exists"] = True
+                output_json["datasetAlleleResponses"] = query_parameters.create_dict()
+            output = JsonResponse(output_json, json_dumps_params={'indent': 2})
+            log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
+                                 user_identifier=request.META.get('USER'),
+                                 authuser=remote_side[0], date_time=datetime.now(),
+                                 request=("%s %s %s" % (
+                                     request.method, request.body, request.META["SERVER_PROTOCOL"])),
+                                 status_code=output.status_code,
+                                 response_size=len(output.content)
+                                 )
+            log_entry.save()
+            return output
+        except UnboundLocalError:
+            return output
 
     def post(self, request, *args, **kwargs):
         """
@@ -162,20 +166,22 @@ class CaseQueryEndpoint(View):
         remote_side = self._authenticate(key)
         if not list(remote_side):
             return HttpResponse('Unauthorized', status=401)
-        # if self._check_access_limit():
+        if self._check_access_limit(remote_side[0]):
+            return HttpResponse('Unauthorized', status=401)
         allele_request = AlleleRequest(chromosome, start, end, reference, alternative, release).create_dict()
-        query_parameters = self._query_variant(remote_side[0].consortium, chromosome, start, end, reference, alternative,
+        query_parameters = self._query_variant(remote_side[0].consortium, chromosome, start, end, reference,
+                                               alternative,
                                                release)
-        if query_parameters["exists"] is False:
+        if query_parameters.exists is False:
             output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0],
                            "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": []}
         else:
-            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters[0],
-                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": query_parameters}
+            output_json = {"beaconId": beacon_id, "apiVersion": api_version, "exists": query_parameters.exists,
+                           "error": None, "alleleRequest": allele_request, "datasetAlleleResponses": query_parameters.create_dict()}
         output = JsonResponse(output_json, json_dumps_params={'indent': 2})
         log_entry = LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
                              user_identifier=request.META.get('USER'),
-                             authuser=consortium[0], date_time=datetime.now(),
+                             authuser=remote_side[0], date_time=datetime.now(),
                              request=("%s %s %s" % (
                                  request.method, request.body, request.META["SERVER_PROTOCOL"])),
                              status_code=output.status_code,
@@ -226,8 +232,10 @@ class CaseQueryEndpoint(View):
         :rtype: object
         """
         access_limit = remote_side.access_limit
-        # if LogEntry.objects.filter(frank=consortium)
-        return 0
+        if LogEntry.objects.filter(authuser=remote_side, date_time__contains=date.today()).count() > access_limit:
+            return True
+        else:
+            return False
 
     def _query_variant(self, consortium, chromosome, start, end, reference, alternative, release):
         """
@@ -235,57 +243,33 @@ class CaseQueryEndpoint(View):
         :rtype: array of query sets
 
         """
-        consortium_dict = {}
-        for c in consortium:
-            if c.visibility_level == "25":
-                consortium_dict[c.name] = CaseQueryVariant.make_query_25(consortium.id,
-                                                                         chromosome,
-                                                                         start,
-                                                                         end,
-                                                                         reference,
-                                                                         alternative,
-                                                                         release)
-            elif c.visibility_level == "20":
-                consortium_dict[c.name] = CaseQueryVariant.make_query_20(consortium.id,
-                                                                         chromosome,
-                                                                         start,
-                                                                         end,
-                                                                         reference,
-                                                                         alternative,
-                                                                         release)
-            elif c.visibility_level == "15":
-                consortium_dict[c.name] = CaseQueryVariant.make_query_15(consortium.id,
-                                                                         chromosome,
-                                                                         start,
-                                                                         end,
-                                                                         reference,
-                                                                         alternative,
-                                                                         release)
-            elif c.visibility_level == "10":
-                consortium_dict[c.name] = CaseQueryVariant.make_query_10(consortium.id,
-                                                                         chromosome,
-                                                                         start,
-                                                                         end,
-                                                                         reference,
-                                                                         alternative,
-                                                                         release)
-            elif c.visibility_level == "5":
-                consortium_dict[c.name] = CaseQueryVariant.make_query_5(consortium.id,
-                                                                        chromosome,
-                                                                        start,
-                                                                        end,
-                                                                        reference,
-                                                                        alternative,
-                                                                        release)
+        variant_query = CaseQueryVariant()
+        variants = Variant.objects.filter(chromosome=chromosome,
+                                          start=start,
+                                          reference=reference,
+                                          end=end,
+                                          alternative=alternative,
+                                          release=release,
+                                          case__project__consortium__in=consortium.all())
+        for v in variants:
+            variant_query.exists = True
+            visibility_level = self._get_highest_vis_level(v.case.project)
+            if visibility_level == "20":
+                variant_query.make_query_20(v)
+            elif visibility_level == "15":
+                variant_query.make_query_15(v)
+            elif visibility_level == "10":
+                variant_query.make_query_10(v)
+            elif visibility_level == "5":
+                variant_query.make_query_5(v)
             else:
-                consortium_dict[c.name] = CaseQueryVariant.make_query_0(consortium.id,
-                                                                        chromosome,
-                                                                        start,
-                                                                        end,
-                                                                        reference,
-                                                                        alternative,
-                                                                        release)
-        return consortium_dict
+                variant_query.make_query_0(v)
+        return AlleleResponse(variant_query.exists,
+                              variant_query.allele_count_greater_ten,
+                              variant_query.allele_count,
+                              variant_query.coarse_phenotypes,
+                              variant_query.phenotypes,
+                              variant_query.case_indices)
 
     def _query_metadata(self):
         try:
@@ -295,3 +279,7 @@ class CaseQueryEndpoint(View):
             return beacon_id, api_version
         except ValueError:
             return 0
+
+    def _get_highest_vis_level(self, project):
+        consortia = Consortium.objects.filter(projects=project).values("visibility_level")
+        return min([c["visibility_level"] for c in consortia])

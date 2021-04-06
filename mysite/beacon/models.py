@@ -27,7 +27,7 @@ class Case(models.Model):
 
     def get_members(self):
         """Return list of members in ``pedigree``."""
-        return sorted([x["patient"] for x in self.pedigree])
+        return [x["patient"] for x in self.pedigree]
 
 
 class Variant(models.Model):
@@ -92,7 +92,7 @@ class Consortium(models.Model):
     #: Name of the consortium.
     name = models.CharField(max_length=255)
     #: Level of visibility of the variant data
-    visibility_level = models.CharField(max_length=255)
+    visibility_level = models.IntegerField()
     #: The project containing this consortium.
     projects = models.ManyToManyField(Project, help_text="Project to which this object belongs.")
 
@@ -119,7 +119,7 @@ class LogEntry(models.Model):
     #: User identifier
     user_identifier = models.CharField(max_length=255)
     #: User (=consortium)
-    authuser = models.ForeignKey(Consortium, on_delete=models.CASCADE, help_text="Consortium to which the client belongs to.")
+    authuser = models.ForeignKey(RemoteSide, on_delete=models.CASCADE, help_text="Remote side to which the client belongs to.")
     #: Date and time of request
     date_time = models.DateTimeField()
     #: Request method
