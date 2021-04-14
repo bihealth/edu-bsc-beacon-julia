@@ -1,6 +1,10 @@
 from django.db import models
 import networkx
 import obonet
+import os
+
+HPO_GRAPH_PATH = os.environ.get('HPO_GRAPH_PATH', "http://purl.obolibrary.org/obo/hp.obo")
+HPO_GRAPH = obonet.read_obo(HPO_GRAPH_PATH)
 
 
 class Project(models.Model):
@@ -17,7 +21,7 @@ class Case(models.Model):
     """
     """
     #: The project containing this case.
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
+    project = models.ForeignKey(Project, null=True, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
     #: Name of this case.
     name = models.CharField(max_length=255)
     #: Index of this case.
@@ -47,7 +51,7 @@ class Variant(models.Model):
     #: Variant coordinates - alternative
     alternative = models.CharField(max_length=512)
     #: Link to Case ID.
-    case = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this variant belongs.")
+    case = models.ForeignKey(Case, null=True, on_delete=models.CASCADE, help_text="Case to which this variant belongs.")
     #: Genotype information as JSONB
     genotype = models.JSONField()
 
@@ -66,20 +70,20 @@ class Phenotype(models.Model):
     #: Phenotype information using HPO
     phenotype = models.CharField(max_length=255)
     #: Link to case ID.
-    case = models.ForeignKey(Case, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
+    case = models.ForeignKey(Case, null=True, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
 
     class Meta:
         indexes = [
             models.Index(fields=["case"])
         ]
 
-    def get_coarse_phenotype(self, url="http://purl.obolibrary.org/obo/hp.obo"):
+    def get_coarse_phenotype(self):
         """"""
         try:
-            hpo_graph = obonet.read_obo(url)
-            phenotype_superterms = list(networkx.descendants(hpo_graph, self.phenotype))
-            if len(phenotype_superterms) > 4:
-                return phenotype_superterms[4]
+            hpo_graph = os.environ.get('HPO_GRAPH')
+            phenotype_coarse_terms = list(networkx.descendants(hpo_graph, self.phenotype))
+            if len(phenotype_coarse_terms) > 4:
+                return phenotype_coarse_terms[4]
             else:
                 return self.phenotype
         except (ValueError, networkx.exception.NetworkXError, KeyError):
@@ -94,20 +98,20 @@ class Consortium(models.Model):
     #: Level of visibility of the variant data
     visibility_level = models.IntegerField()
     #: The project containing this consortium.
-    projects = models.ManyToManyField(Project, help_text="Project to which this object belongs.")
+    projects = models.ManyToManyField(Project, blank=True, help_text="Project to which this object belongs.")
 
 
-class RemoteSide(models.Model):
+class RemoteSite(models.Model):
     """
     """
-    #: Name of the remote side.
+    #: Name of the remote site.
     name = models.CharField(max_length=255)
     #: Authentication key
     key = models.CharField(max_length=255)
     #: Access limit per day
     access_limit = models.IntegerField()
-    #: The consortium containing this remote side.
-    consortium = models.ManyToManyField(Consortium, help_text="Consortium to which this object belongs.")
+    #: The consortium containing this remote site.
+    consortia = models.ManyToManyField(Consortium, blank=True, help_text="Consortium to which this object belongs.")
 
 
 class LogEntry(models.Model):
@@ -115,11 +119,11 @@ class LogEntry(models.Model):
 
     """
     #: IP address client
-    ip_address = models.CharField(max_length=15)
+    ip_address = models.GenericIPAddressField(unpack_ipv4=True)
     #: User identifier
     user_identifier = models.CharField(max_length=255)
     #: User (=consortium)
-    authuser = models.ForeignKey(RemoteSide, on_delete=models.CASCADE, help_text="Remote side to which the client belongs to.")
+    authuser = models.ForeignKey(RemoteSite, null=True, on_delete=models.CASCADE, help_text="Remote site to which the client belongs to.")
     #: Date and time of request
     date_time = models.DateTimeField()
     #: Request method
@@ -152,7 +156,7 @@ class MetadataBeaconOrganization(models.Model):
     # email (RFC 2368 format).
     contact_url = models.CharField(max_length=255)
     #: Beacon ID which this organization hosts.
-    beacon_id = models.ForeignKey(MetadataBeacon, on_delete=models.CASCADE, help_text="Beacon which this organization "
+    metadata_beacon = models.ForeignKey(MetadataBeacon, null=True, on_delete=models.CASCADE, help_text="Beacon which this organization "
                                                                                       "hosts.")
 
 
@@ -163,12 +167,12 @@ class MetadataBeaconDataset(models.Model):
     beacon_data_id = models.CharField(max_length=255)
     #: Name of the dataset.
     name = models.CharField(max_length=255)
-    #: Assembly identifier 	- "GRCh38"
+    #: Assembly identifier. 	- "GRCh38"
     assembly_id = models.CharField(max_length=255)
     #: The time the dataset was created (ISO 8601 format). 	- "2012-07-19 or 2017-01-17T20:33:40Z"
     create_date_time = models.DateTimeField()
     #: The time the dataset was updated in (ISO 8601 format). - "2012-07-19 or 2017-01-17T20:33:40Z"
     update_date_time = models.DateTimeField()
     #: Beacon ID which this organisation hosts.
-    beacon_id = models.ForeignKey(MetadataBeacon, on_delete=models.CASCADE, help_text="Beacon which this dataset "
+    metadata_beacon = models.ForeignKey(MetadataBeacon, null=True, on_delete=models.CASCADE, help_text="Beacon which this dataset "
                                                                                       "contains.")

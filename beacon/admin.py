@@ -1,9 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-from django.contrib import admin
-import logging
-
 from .models import (
     Variant,
     Phenotype,
@@ -14,9 +9,8 @@ from .models import (
     MetadataBeacon,
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
-    RemoteSide
+    RemoteSite
 )
-
 # Register your models here.
 admin.site.register(
     (
@@ -24,11 +18,11 @@ admin.site.register(
         Phenotype,
         Case,
         Project,
-        Consortium,
         LogEntry,
         MetadataBeacon,
         MetadataBeaconOrganization,
         MetadataBeaconDataset,
-        RemoteSide
+        RemoteSite,
+        Consortium
     )
 )

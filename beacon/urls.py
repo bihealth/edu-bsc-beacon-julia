@@ -1,6 +1,5 @@
-from django.urls import path
 from . import views
-from .views import CaseInfoEndpoint, CaseQueryEndpoint
+from django.urls import path
 
 urlpatterns = [
     path('', views.CaseInfoEndpoint.as_view()),
