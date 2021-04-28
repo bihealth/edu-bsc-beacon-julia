@@ -11,7 +11,7 @@ class QueryResponse:
     def create_dict(self):
         if not self.dataset_allele_response:
             self.dataset_allele_response = []
-        return dict(beaconID=self.beacon_id, apiVersion=self.api_version, exists=self.exists,
+        return dict(beaconId=self.beacon_id, apiVersion=self.api_version, exists=self.exists,
                     error=self.error, alleleRequest=self.allele_request,
                     datasetAlleleResponses=self.dataset_allele_response)
 
@@ -62,10 +62,7 @@ class Error:
         self.error_message = error_message
 
     def create_dict(self):
-        error_dict = {"errorCode": self.error_code,
-                      "errorMessage": self.error_message,
-                      }
-        return error_dict
+        return dict(errorCode=self.error_code, errorMessage=self.error_message)
 
 
 class InfoResponse:
@@ -78,13 +75,8 @@ class InfoResponse:
         self.organization_dict = organization_dict
 
     def create_dict(self):
-        info_dict = {"beaconID": self.beacon_id,
-                     "name": self.name,
-                     "apiVersion": self.api_version,
-                     "dataset": self.dataset_dict_list,
-                     "organization": self.organization_dict
-                     }
-        return info_dict
+        return dict(id=self.beacon_id, name=self.name, apiVersion=self.api_version,
+                    datasets=self.dataset_dict_list, organization=self.organization_dict)
 
 
 class DatasetResponse:
@@ -97,7 +89,7 @@ class DatasetResponse:
 
     def create_dict(self):
         return dict(id=self.id, name=self.name, assemblyId=self.assembly_id,
-                    createDateTime=self.create_date_time, updateDateTime=self.update_date_time)
+                    createDateTime=str(self.create_date_time), updateDateTime=str(self.update_date_time))
 
 
 class OrganizationResponse:

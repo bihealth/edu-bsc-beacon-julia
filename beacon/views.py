@@ -12,7 +12,7 @@ from .models import (
 )
 from .json_structures import AlleleRequest, AlleleResponse, Error, InfoResponse, DatasetResponse, OrganizationResponse, \
     QueryResponse
-from .queries import CaseQueryVariant, CaseWriteLogEntry
+from .queries import CaseQueryVariant
 from datetime import datetime, date
 
 
@@ -28,38 +28,30 @@ class CaseInfoEndpoint(View):
         return self._handle(request, *args, **kwargs)
 
     def _handle(self, request, *args, **kwargs):
-        try:
-            metadata_beacon = MetadataBeacon.objects.all()
-            datasets = MetadataBeaconDataset.objects.filter(metadata_beacon=metadata_beacon[0])
-            datasets_dict_list = []
-            for d in datasets:
-                datasets_dict = DatasetResponse(d.beacon_data_id,
-                                                d.name,
-                                                d.assembly_id,
-                                                d.create_date_time,
-                                                d.update_date_time).create_dict()
-                datasets_dict_list.append(datasets_dict)
-            organisations = MetadataBeaconOrganization.objects.filter(metadata_beacon=metadata_beacon[0])
-            dict_org = OrganizationResponse(organisations[0].beacon_org_id,
-                                            organisations[0].name,
-                                            organisations[0].contact_url).create_dict()
-            output = JsonResponse(
-                InfoResponse(metadata_beacon[0].beacon_id, metadata_beacon[0].name, metadata_beacon[0].api_version,
-                             datasets_dict_list, dict_org).create_dict(), json_dumps_params={'indent': 2})
-        except IndexError: #Error because of not available metadata
-            output = JsonResponse({"error": Error(404, "An internal error occurred.").create_dict()}, status=404,
-                                  json_dumps_params={'indent': 2})
-        try:
-            CaseWriteLogEntry(request.META.get('REMOTE_ADDR'),
-                              request.META.get('USER'),
-                              RemoteSite.objects.get(name='public'),
-                              datetime.now(),
-                              ("%s %s %s" % (request.method, request.body, request.META["SERVER_PROTOCOL"])),
-                              output.status_code,
-                              len(output.content)).make_log_entry()
-        except ValueError: #Error because of invalid or hidden client ip_address
-            output = JsonResponse({"error": Error(403, "Your ip_address is invalid.").create_dict()}, status=403,
-                                  json_dumps_params={'indent': 2})
+        metadata_beacon = MetadataBeacon.objects.all()
+        datasets = MetadataBeaconDataset.objects.filter(metadata_beacon=metadata_beacon[0])
+        datasets_dict_list = []
+        for d in datasets:
+            datasets_dict = DatasetResponse(d.beacon_data_id,
+                                            d.name,
+                                            d.assembly_id,
+                                            d.create_date_time,
+                                            d.update_date_time).create_dict()
+            datasets_dict_list.append(datasets_dict)
+        organisations = MetadataBeaconOrganization.objects.filter(metadata_beacon=metadata_beacon[0])
+        dict_org = OrganizationResponse(organisations[0].beacon_org_id,
+                                        organisations[0].name,
+                                        organisations[0].contact_url).create_dict()
+        output = JsonResponse(
+            InfoResponse(metadata_beacon[0].beacon_id, metadata_beacon[0].name, metadata_beacon[0].api_version,
+                         datasets_dict_list, dict_org).create_dict(), json_dumps_params={'indent': 2})
+        LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
+                 user_identifier=request.META.get('USER'),
+                 authuser=RemoteSite.objects.get(name='public'),
+                 date_time=datetime.now(),
+                 request=("%s %s %s" % (request.method, request.body, request.META["SERVER_PROTOCOL"])),
+                 status_code=output.status_code,
+                 response_size=len(output.content)).save()
         return output
 
 
@@ -130,31 +122,16 @@ class CaseQueryEndpoint(View):
                 output_json["exists"] = True
                 output_json["datasetAlleleResponses"] = query_parameters.create_dict()
             output = JsonResponse(output_json, json_dumps_params={'indent': 2})
-        except IndexError: #No metadata available
-            output = JsonResponse(QueryResponse(None, None, allele_request,
-                                                None, Error(404, "An internal error occurred.")).create_dict(),
-                                  status=404, json_dumps_params={'indent': 2})
-        except UnboundLocalError: #Not authenticated or invalid arguments
+        except UnboundLocalError:  # Not authenticated or invalid arguments
             output = JsonResponse(output_json, status=output_json["error"]["errorCode"],
                                   json_dumps_params={'indent': 2})
-        except KeyError:  #Error in query database for variant
-            output_json["error"] = Error(404, "An internal error occurred.").create_dict()
-            output = JsonResponse(output_json, status=output_json["error"]["errorCode"],
-                                  json_dumps_params={'indent': 2})
-        try:
-            CaseWriteLogEntry(request.META.get('REMOTE_ADDR'),
-                              request.META.get('USER'),
-                              remote_site[0],
-                              datetime.now(),
-                              ("%s %s %s" % (request.method, request.body, request.META["SERVER_PROTOCOL"])),
-                              output.status_code,
-                              len(output.content)).make_log_entry()
-        except ValueError: #Error because of invalid or hidden client ip_address
-            output_json["exists"] = None
-            output_json["error"] = Error(403, "Your ip_address is invalid.").create_dict()
-            output_json["datasetAlleleResponses"] = []
-            output = JsonResponse(output_json, status=output_json["error"]["errorCode"],
-                                  json_dumps_params={'indent': 2})
+        LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
+                 user_identifier=request.META.get('USER'),
+                 authuser=remote_site[0],
+                 date_time=datetime.now(),
+                 request=("%s %s %s" % (request.method, request.body, request.META["SERVER_PROTOCOL"])),
+                 status_code=output.status_code,
+                 response_size=len(output.content)).save()
         return output
 
     def _check_query_input(self, chromosome, start, end, reference, alternative):
@@ -217,10 +194,10 @@ class CaseQueryEndpoint(View):
                                           end=end,
                                           alternative=alternative,
                                           release=release,
-                                          case__project__consortium__in=consortium.all())
+                                          case__project__consortium__in=consortium.all()).distinct()
         for v in variants:
             variant_query.exists = True
-            visibility_level = self._get_highest_vis_level(v.case.project)
+            visibility_level = self._get_highest_vis_level(v.case.project, consortium)
             if visibility_level == 20:
                 variant_query.make_query_20(v)
             if visibility_level == 15:
@@ -242,6 +219,7 @@ class CaseQueryEndpoint(View):
         metadata_beacon = MetadataBeacon.objects.all()
         return metadata_beacon[0].beacon_id, metadata_beacon[0].api_version
 
-    def _get_highest_vis_level(self, projects):
-        consortia = Consortium.objects.filter(projects=projects).values("visibility_level")
+    def _get_highest_vis_level(self, projects, consortium):
+        consortia = Consortium.objects.filter(projects=projects, id__in=consortium.all().values("id")).values(
+            "visibility_level")
         return min([c["visibility_level"] for c in consortia])

@@ -1,5 +1,6 @@
 import datetime
 import factory
+from django.utils import timezone
 import os
 import obonet
 import random
@@ -16,15 +17,17 @@ from ..models import (
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
 )
+from ..json_structures import QueryResponse, AlleleResponse, AlleleRequest, DatasetResponse, Error, InfoResponse, OrganizationResponse
+from django.test import RequestFactory
 
 # Pass in any value
 #factory.random.reseed_random('my awesome project')
 
 def default_genotypes():
     """Build default genotype pattern (het. in first, wild-type otherwise)."""
-    yield "0/1"
+    yield {"gt": "0/1"}
     while True:
-        yield "0/0"
+        yield {"gt": "0/0"}
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):
@@ -274,12 +277,8 @@ class VariantFactory(factory.django.DjangoModelFactory):
         """Generate genotype JSON field from already set ``self.case``."""
         return {
             line["patient"]: gt
-            for line, gt in zip(self.variant_set.case.pedigree, self.genotypes())
+            for line, gt in zip(self.case.pedigree, self.genotypes())
         }
-
-
-HPO_GRAPH_PATH = os.environ.get('HPO_GRAPH_PATH', "http://purl.obolibrary.org/obo/hp.obo")
-HPO_GRAPH = obonet.read_obo(HPO_GRAPH_PATH)
 
 
 class PhenotypeFactory(factory.django.DjangoModelFactory):
@@ -290,13 +289,7 @@ class PhenotypeFactory(factory.django.DjangoModelFactory):
 
     case = factory.SubFactory(CaseFactory)
 
-    @factory.lazy_attribute
-    def phenotype(self):
-        """Generate phenotype HPO term."""
-
-        hpo_graph = os.environ.get('HPO_GRAPH')
-        return random.sample(list(hpo_graph.nodes()), 1)[0]
-
+    phenotype = factory.Sequence(lambda n: u"HP:0000{}".format(n+100)) #TODO make sure length 7
 
 VISIBILITY_LEVEL_MAPPING = {vis: i + 1 for i, vis in enumerate(list(range(0, 25, 5)))}
 
@@ -330,7 +323,7 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: "Remote Site %d" % n)
     key = factory.Sequence(lambda n: "".join(random.choices(string.ascii_lowercase + string.digits + string.ascii_uppercase, k=7))+"%d" % n)
-    access_limit = factory.LazyAttribute(random.randint(0, 100))
+    access_limit = factory.Sequence(lambda n: (n + 1) * 10)
 
     @factory.post_generation
     def consortia(self, create, extracted, **kwargs):
@@ -344,19 +337,22 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
                 self.consortia.add(consortium)
 
 
-#class LogEntryFactory(factory.django.DjangoModelFactory):
+#class LogEntryFactory(factory.django.DjangoModelFactory, RequestFactory):
 #    """Factory for creating ``LogEntry`` objects."""
 
     #class Meta:
-     #   model = LogEntry
+    #   model = LogEntry
 
-   # ip_address = factory.Sequence(lambda n: "0.0.0.%d" % n)
-    #user_identifier =
-    #authuser = factory.SubFactory(RemoteSiteFactory)
+    #ip_address =
+    #user_identifier = factory.Sequence(lambda n: "User" % n)
     #date_time = factory.LazyFunction(datetime.now)
-    #request =
-    #status_code
-    #response_size
+    #authuser = factory.SubFactory(RemoteSiteFactory)
+
+    #@factory.lazy_attribute
+    #def request(self):
+    #    request = factory.SubFactory(RequestFactory).get
+    #status_code = request.
+    #response_size =
 
 
 class MetadataBeaconFactory(factory.django.DjangoModelFactory):
@@ -403,8 +399,11 @@ class MetadataBeaconDatasetFactory(factory.django.DjangoModelFactory):
     #: Assembly identifier.
     assembly_id = "GRCh37"
     #: The time the dataset was created (ISO 8601 format).
-    create_date_time = factory.LazyFunction(datetime.now)
+    create_date_time = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
     #: The time the dataset was updated in (ISO 8601 format).
-    update_date_time = factory.LazyFunction(datetime.now)
+    update_date_time = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
     #: Beacon ID which this organisation hosts.
     metadata_beacon = factory.SubFactory(MetadataBeaconFactory)
+
+
+

@@ -7,6 +7,9 @@ name = "pypi"
 django = "*"
 networkx = "*"
 obonet = "*"
+factory-boy = "*"
+django-nose = "*"
+coverage = "*"
 
 [dev-packages]
 

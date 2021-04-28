@@ -1,9 +1,8 @@
 from django.db import models
 import networkx
 import obonet
-import os
 
-HPO_GRAPH_PATH = os.environ.get('HPO_GRAPH_PATH', "http://purl.obolibrary.org/obo/hp.obo")
+HPO_GRAPH_PATH = "http://purl.obolibrary.org/obo/hp.obo"
 HPO_GRAPH = obonet.read_obo(HPO_GRAPH_PATH)
 
 
@@ -13,7 +12,7 @@ class Project(models.Model):
     """
     #: Project title
     title = models.CharField(
-        max_length=255, unique=False, help_text="Project title"
+        max_length=255, null=True, help_text="Project title"
     )
 
 
@@ -21,17 +20,13 @@ class Case(models.Model):
     """
     """
     #: The project containing this case.
-    project = models.ForeignKey(Project, null=True, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
+    project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
     #: Name of this case.
     name = models.CharField(max_length=255)
     #: Index of this case.
     index = models.CharField(max_length=255)
     #: pedigree
     pedigree = models.JSONField()
-
-    def get_members(self):
-        """Return list of members in ``pedigree``."""
-        return [x["patient"] for x in self.pedigree]
 
 
 class Variant(models.Model):
@@ -51,7 +46,7 @@ class Variant(models.Model):
     #: Variant coordinates - alternative
     alternative = models.CharField(max_length=512)
     #: Link to Case ID.
-    case = models.ForeignKey(Case, null=True, on_delete=models.CASCADE, help_text="Case to which this variant belongs.")
+    case = models.ForeignKey(Case, blank=True, null=True, on_delete=models.CASCADE, help_text="Case to which this variant belongs.")
     #: Genotype information as JSONB
     genotype = models.JSONField()
 
@@ -60,8 +55,11 @@ class Variant(models.Model):
             models.Index(fields=["release", "chromosome", "start", "end", "reference", "alternative"])
         ]
 
-    def get_allele_count(self, case_index):
-        return self.genotype[case_index]["gt"].count("1")
+    def get_allele_count(self):
+        c = 0
+        for x in self.case.pedigree:
+            c += self.genotype[x["patient"]]["gt"].count("1")
+        return c
 
 
 class Phenotype(models.Model):
@@ -70,7 +68,7 @@ class Phenotype(models.Model):
     #: Phenotype information using HPO
     phenotype = models.CharField(max_length=255)
     #: Link to case ID.
-    case = models.ForeignKey(Case, null=True, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
+    case = models.ForeignKey(Case, blank=True, null=True, on_delete=models.CASCADE, help_text="Case to which this phenotype belongs.")
 
     class Meta:
         indexes = [
@@ -79,26 +77,34 @@ class Phenotype(models.Model):
 
     def get_coarse_phenotype(self):
         """"""
-        try:
-            hpo_graph = os.environ.get('HPO_GRAPH')
-            phenotype_coarse_terms = list(networkx.descendants(hpo_graph, self.phenotype))
-            if len(phenotype_coarse_terms) > 4:
-                return phenotype_coarse_terms[4]
-            else:
-                return self.phenotype
-        except (ValueError, networkx.exception.NetworkXError, KeyError):
-            return None
+        items = networkx.shortest_path_length(HPO_GRAPH, source=self.phenotype).items()
+        phenotype_coarse_terms_dict = {d: n for n, d in items}
+        #TODO: check 4 is a good depth
+        distance = max(phenotype_coarse_terms_dict.keys())-4
+        coarse_terms = [n for n, d in items if d == distance]
+        if not coarse_terms:
+            return self.phenotype
+        else:
+            return coarse_terms
 
 
 class Consortium(models.Model):
     """
     """
+    VISIBILITY_LEVEL_CHOICES = [
+        (0, "Level_case_index_visible"),
+        (5, "Level_phenotype_visible"),
+        (10, "Level_coarse_phenotype_visible"),
+        (15, "Level_allele_count_visible"),
+        (20, "Level_allele_count_greater_ten_visible"),
+        (25, "Level_exists_visible")
+    ]
     #: Name of the consortium.
     name = models.CharField(max_length=255)
     #: Level of visibility of the variant data
-    visibility_level = models.IntegerField()
+    visibility_level = models.IntegerField(choices=VISIBILITY_LEVEL_CHOICES)
     #: The project containing this consortium.
-    projects = models.ManyToManyField(Project, blank=True, help_text="Project to which this object belongs.")
+    projects = models.ManyToManyField(Project, blank=True, null=True, help_text="Project to which this object belongs.")
 
 
 class RemoteSite(models.Model):
@@ -107,11 +113,11 @@ class RemoteSite(models.Model):
     #: Name of the remote site.
     name = models.CharField(max_length=255)
     #: Authentication key
-    key = models.CharField(max_length=255)
+    key = models.CharField(max_length=255, unique=True)
     #: Access limit per day
     access_limit = models.IntegerField()
     #: The consortium containing this remote site.
-    consortia = models.ManyToManyField(Consortium, blank=True, help_text="Consortium to which this object belongs.")
+    consortia = models.ManyToManyField(Consortium, blank=True, null=True, help_text="Consortium to which this object belongs.")
 
 
 class LogEntry(models.Model):
@@ -121,7 +127,7 @@ class LogEntry(models.Model):
     #: IP address client
     ip_address = models.GenericIPAddressField(unpack_ipv4=True)
     #: User identifier
-    user_identifier = models.CharField(max_length=255)
+    user_identifier = models.CharField(max_length=255, blank=True, null=True)
     #: User (=consortium)
     authuser = models.ForeignKey(RemoteSite, null=True, on_delete=models.CASCADE, help_text="Remote site to which the client belongs to.")
     #: Date and time of request

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import obonet
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_nose'
 ]
 
 MIDDLEWARE = [
@@ -120,3 +121,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000
+
+#HPO_GRAPH_PATH = os.environ.get('HPO_GRAPH_PATH', "http://purl.obolibrary.org/obo/hp.obo")
+HPO_GRAPH = obonet.read_obo("http://purl.obolibrary.org/obo/hp.obo")
+
+TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
+
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=beacon',
+    '--cover-html'
+]
