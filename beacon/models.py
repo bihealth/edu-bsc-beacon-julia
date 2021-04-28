@@ -18,6 +18,7 @@ class Project(models.Model):
 
 class Case(models.Model):
     """
+    A Case as used in VarFish or SODAR.
     """
     #: The project containing this case.
     project = models.ForeignKey(Project, blank=True, null=True, on_delete=models.CASCADE, help_text="Project to which this object belongs.")
@@ -64,6 +65,7 @@ class Variant(models.Model):
 
 class Phenotype(models.Model):
     """
+    The Phenotype of a case.
     """
     #: Phenotype information using HPO
     phenotype = models.CharField(max_length=255)
@@ -90,6 +92,8 @@ class Phenotype(models.Model):
 
 class Consortium(models.Model):
     """
+    A Consortium related to certain Remote Sites and Projects.
+    Indicates the visibility level of the projects data seen in the query request.
     """
     VISIBILITY_LEVEL_CHOICES = [
         (0, "Level_case_index_visible"),
@@ -109,6 +113,8 @@ class Consortium(models.Model):
 
 class RemoteSite(models.Model):
     """
+    A Remote Site for which the client needs a key to log into.
+    The access of the Remote Site can be regulated by a given limit.
     """
     #: Name of the remote site.
     name = models.CharField(max_length=255)
@@ -122,7 +128,7 @@ class RemoteSite(models.Model):
 
 class LogEntry(models.Model):
     """
-
+    Each requests of the Beacon are logged with a LogEntry object.
     """
     #: IP address client
     ip_address = models.GenericIPAddressField(unpack_ipv4=True)
