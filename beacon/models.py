@@ -56,11 +56,15 @@ class Variant(models.Model):
             models.Index(fields=["release", "chromosome", "start", "end", "reference", "alternative"])
         ]
 
-    def get_allele_count(self):
-        c = 0
+    def get_variant_sample_count(self):
+        c_variant = 0
+        c_sample = 0
         for x in self.case.pedigree:
-            c += self.genotype[x["patient"]]["gt"].count("1")
-        return c
+            allele_count = self.genotype[x["patient"]]["gt"].count("1")
+            c_variant += allele_count
+            if allele_count > 0:
+                c_sample += 1
+        return c_variant, c_sample
 
 
 class Phenotype(models.Model):
@@ -79,15 +83,17 @@ class Phenotype(models.Model):
 
     def get_coarse_phenotype(self):
         """"""
-        items = networkx.shortest_path_length(HPO_GRAPH, source=self.phenotype).items()
-        phenotype_coarse_terms_dict = {d: n for n, d in items}
         #TODO: check 4 is a good depth
-        distance = max(phenotype_coarse_terms_dict.keys())-4
-        coarse_terms = [n for n, d in items if d == distance]
-        if not coarse_terms:
-            return self.phenotype
-        else:
-            return coarse_terms
+        coarse_terms = []
+        if self.phenotype == "HP:0000001":
+            coarse_terms.append(self.phenotype)
+        for path in networkx.algorithms.all_simple_paths(HPO_GRAPH, source=self.phenotype, target='HP:0000001'):
+            distance = len(path)
+            if distance > 4:
+                coarse_terms.append(path[distance-4])
+            else:
+                coarse_terms.append(self.phenotype)
+        return coarse_terms
 
 
 class Consortium(models.Model):
@@ -99,16 +105,16 @@ class Consortium(models.Model):
         (0, "Level_case_index_visible"),
         (5, "Level_phenotype_visible"),
         (10, "Level_coarse_phenotype_visible"),
-        (15, "Level_allele_count_visible"),
-        (20, "Level_allele_count_greater_ten_visible"),
-        (25, "Level_exists_visible")
+        (15, "Level_variant_count_visible"),
+        (20, "Level_variant_count_greater_ten_visible"),
+        (25, "Level_exists_sample_count_visible")
     ]
     #: Name of the consortium.
     name = models.CharField(max_length=255)
     #: Level of visibility of the variant data
     visibility_level = models.IntegerField(choices=VISIBILITY_LEVEL_CHOICES)
     #: The project containing this consortium.
-    projects = models.ManyToManyField(Project, blank=True, null=True, help_text="Project to which this object belongs.")
+    projects = models.ManyToManyField(Project, blank=True, help_text="Project to which this object belongs.")
 
 
 class RemoteSite(models.Model):

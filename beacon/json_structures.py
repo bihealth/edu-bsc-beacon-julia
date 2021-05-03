@@ -34,10 +34,12 @@ class AlleleRequest:
 
 class AlleleResponse:
 
-    def __init__(self, exists, allele_count_greater_ten, allele_count, coarse_phenotype, phenotype, case_indices):
+    def __init__(self, exists, sample_count, variant_count_greater_ten, variant_count, frequency, coarse_phenotype, phenotype, case_indices):
         self.exists = exists
-        self.allele_count_greater_ten = allele_count_greater_ten
-        self.allele_count = allele_count
+        self.sample_count = sample_count
+        self.variant_count_greater_ten = variant_count_greater_ten
+        self.variant_count = variant_count
+        self.frequency = frequency
         self.coarse_phenotype = coarse_phenotype
         self.phenotype = phenotype
         self.case_indices = case_indices
@@ -45,8 +47,10 @@ class AlleleResponse:
 
     def create_dict(self):
         allele_response_dict = {"exists": self.exists,
-                                "alleleCount>10": self.allele_count_greater_ten,
-                                "alleleCount": self.allele_count,
+                                "sampleCount": self.sample_count,
+                                "variantCount>10": self.variant_count_greater_ten,
+                                "variantCount": self.variant_count,
+                                "frequency": self.frequency,
                                 "coarsePhenotype": self.coarse_phenotype,
                                 "phenotype": self.phenotype,
                                 "caseName": self.case_indices,

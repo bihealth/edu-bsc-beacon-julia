@@ -51,10 +51,12 @@ class TestVariant(TestCase):
         VariantFactory()
         self.assertEqual(Variant.objects.count(), 2)
 
-    def test_get_allele_count(self):
-        allele_count = self.variant.get_allele_count()
-        self.assertIsInstance(allele_count, int)
-        self.assertEqual(allele_count, 1)
+    def test_get_variant_sample_count(self):
+        variant_count, sample_count = self.variant.get_variant_sample_count()
+        self.assertIsInstance(variant_count, int)
+        self.assertEqual(variant_count, 1)
+        self.assertIsInstance(sample_count, int)
+        self.assertEqual(sample_count, 1)
 
 
 class TestPhenotype(TestCase):
@@ -69,9 +71,11 @@ class TestPhenotype(TestCase):
     def test_get_coarse_phenotype(self):
         coarse_phenotype = self.phenotype.get_coarse_phenotype()
         self.assertIsInstance(coarse_phenotype, list)
-        self.assertIn("HP:0011277", coarse_phenotype)
-        coarse_phenotype_already_coarse = PhenotypeFactory(phenotype="HP:0000001").get_coarse_phenotype()
-        self.assertEqual(coarse_phenotype_already_coarse, "HP:0000001")
+        self.assertIn("HP:0000079", coarse_phenotype)
+        coarse_phenotype_already_coarse = PhenotypeFactory(phenotype="HP:0000118").get_coarse_phenotype()
+        self.assertEqual(coarse_phenotype_already_coarse, ["HP:0000118"])
+        coarse_phenotype_already_coarse_root = PhenotypeFactory(phenotype="HP:0000001").get_coarse_phenotype()
+        self.assertEqual(coarse_phenotype_already_coarse_root, ["HP:0000001"])
 
 
 class TestConsortium(TestCase):

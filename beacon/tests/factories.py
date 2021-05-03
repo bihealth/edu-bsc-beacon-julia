@@ -281,6 +281,9 @@ class VariantFactory(factory.django.DjangoModelFactory):
         }
 
 
+PHENOTYPES = ["HP:0001166", "HP:0001049", "HP:0001039", "HP:0000543", "HP:0001249"]
+
+
 class PhenotypeFactory(factory.django.DjangoModelFactory):
     """Factory for creating ``Phenotype`` objects."""
 
@@ -288,8 +291,8 @@ class PhenotypeFactory(factory.django.DjangoModelFactory):
         model = Phenotype
 
     case = factory.SubFactory(CaseFactory)
+    phenotype = factory.Iterator(PHENOTYPES)
 
-    phenotype = factory.Sequence(lambda n: u"HP:0000{}".format(n+100)) #TODO make sure length 7
 
 VISIBILITY_LEVEL_MAPPING = {vis: i + 1 for i, vis in enumerate(list(range(0, 25, 5)))}
 
@@ -362,7 +365,7 @@ class MetadataBeaconFactory(factory.django.DjangoModelFactory):
         model = MetadataBeacon
 
     #: Unique identifier of the beacon. Use reverse domain name notation.
-    beacon_id = factory.Sequence(lambda n: "%d" % n)
+    beacon_id = factory.Sequence(lambda n: "Id %d" % n)
     #: Human readable name of the beacon.
     name = factory.Sequence(lambda n: "Beacon %d" % n)
     #: Version of the API provided by the beacon.
@@ -376,7 +379,7 @@ class MetadataBeaconOrganizationFactory(factory.django.DjangoModelFactory):
         model = MetadataBeaconOrganization
 
     #: Unique identifier of the organization.
-    beacon_org_id = factory.Sequence(lambda n: "%d" % n)
+    beacon_org_id = factory.Sequence(lambda n: "Id %d" % n)
     #: Name of the organization.
     name = factory.Sequence(lambda n: "Organization %d" % n)
     # : URL with the contact for the beacon operator/maintainer, e.g. link to a contact form (RFC 3986 format) or an
@@ -393,7 +396,7 @@ class MetadataBeaconDatasetFactory(factory.django.DjangoModelFactory):
         model = MetadataBeaconDataset
 
     #: Unique identifier of the dataset.
-    beacon_data_id = factory.Sequence(lambda n: "%d" % n)
+    beacon_data_id = factory.Sequence(lambda n: "Id %d" % n)
     #: Name of the dataset.
     name = factory.Sequence(lambda n: "Dataset %d" % n)
     #: Assembly identifier.
