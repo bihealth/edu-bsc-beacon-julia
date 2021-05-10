@@ -1,16 +1,19 @@
 import datetime
-
 from django.test import TestCase
 from django.urls import reverse
-#from unittest import TestCase
 from .factories import (
     MetadataBeaconFactory,
     MetadataBeaconOrganizationFactory,
     MetadataBeaconDatasetFactory,
-    RemoteSiteFactory
+    RemoteSiteFactory,
+    VariantFactory,
+    ConsortiumFactory,
+    CaseFactory,
+    ProjectFactory,
+    PhenotypeFactory
 )
-from ..views import CaseInfoEndpoint, CaseQueryEndpoint
-from ..models import LogEntry, MetadataBeaconDataset, RemoteSite
+from ..views import CaseQueryEndpoint
+from ..models import LogEntry, RemoteSite, Variant, Project, Phenotype, Case, Consortium
 from django.http import JsonResponse
 from django.test import Client
 
@@ -57,7 +60,7 @@ class TestCaseInfoEndpoint(TestCase):
         self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, self.remote_site)
         self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertIn('GET', log.request)
+        self.assertEqual('GET;/;HTTP/1.1', log.request)
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
@@ -70,6 +73,74 @@ class TestCaseQueryEndpoint(TestCase):
         self.metadata_dataset = MetadataBeaconDatasetFactory(metadata_beacon=self.metadata_beacon)
         self.remote_site_public = RemoteSiteFactory(name='public', key='public')
         self.remote_site_xxx = RemoteSiteFactory(key='xxx')
+
+    def test_get_query(self):
+        response = self.client.get(reverse("query"), {"referenceName": 1,
+                                                      "start": 12344,
+                                                      "end": 12345,
+                                                      "referenceBases": "C",
+                                                      "alternateBases": "T"}
+                                   )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, JsonResponse({
+            "beaconId": str(self.metadata_beacon.beacon_id),
+            "apiVersion": self.metadata_beacon.api_version,
+            "exists": False,
+            "error": None,
+            "alleleRequest": {"referenceName": "1",
+                              "start": "12344",
+                              "end": "12345",
+                              "referenceBases": "C",
+                              "alternateBases": "T",
+                              "assemblyId": "GRCh37"
+                              },
+            "datasetAlleleResponses": [],
+        }, json_dumps_params={'indent': 2}
+        ).content)
+        log = LogEntry.objects.all()[0]
+        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertEqual(log.user_identifier, None)
+        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertIsInstance(log.date_time, datetime.datetime)
+        self.assertEqual(
+            "GET;/query;[('referenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T')];HTTP/1.1",
+            log.request)
+        self.assertEqual(log.status_code, 200)
+        self.assertIsInstance(log.response_size, int)
+
+    def test_post_query(self):
+        response = self.client.post(reverse("query"), {"referenceName": 1,
+                                                       "start": 12344,
+                                                       "end": 12345,
+                                                       "referenceBases": "C",
+                                                       "alternateBases": "T"}
+                                    )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, JsonResponse({
+            "beaconId": str(self.metadata_beacon.beacon_id),
+            "apiVersion": self.metadata_beacon.api_version,
+            "exists": False,
+            "error": None,
+            "alleleRequest": {"referenceName": "1",
+                              "start": "12344",
+                              "end": "12345",
+                              "referenceBases": "C",
+                              "alternateBases": "T",
+                              "assemblyId": "GRCh37"
+                              },
+            "datasetAlleleResponses": [],
+        }, json_dumps_params={'indent': 2}
+        ).content)
+        log = LogEntry.objects.all()[0]
+        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertEqual(log.user_identifier, None)
+        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertIsInstance(log.date_time, datetime.datetime)
+        self.assertEqual(
+            "POST;/query;[('referenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T')];HTTP/1.1",
+            log.request)
+        self.assertEqual(log.status_code, 200)
+        self.assertIsInstance(log.response_size, int)
 
     def test_get_query_no_input(self):
         self.assertEqual(LogEntry.objects.count(), 0)
@@ -95,18 +166,14 @@ class TestCaseQueryEndpoint(TestCase):
         }, json_dumps_params={'indent': 2}
         ).content)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
-        self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, None)
-        self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertIn('GET', log.request)
+        self.assertEqual("GET;/query;[];HTTP/1.1", log.request)
         self.assertEqual(log.status_code, 400)
-        self.assertIsInstance(log.response_size, int)
 
     def test_get_query_invalid_input(self):
         self.assertEqual(LogEntry.objects.count(), 0)
         response = self.client.get(reverse("query"), {"reerenceName": 1,
-                                                      "start": 12345,
+                                                      "start": 12344,
                                                       "end": 12345,
                                                       "referenceBases": "C",
                                                       "alternateBases": "T"})
@@ -121,7 +188,7 @@ class TestCaseQueryEndpoint(TestCase):
 
             },
             "alleleRequest": {"referenceName": None,
-                              "start": "12345",
+                              "start": "12344",
                               "end": "12345",
                               "referenceBases": "C",
                               "alternateBases": "T",
@@ -131,18 +198,16 @@ class TestCaseQueryEndpoint(TestCase):
         }, json_dumps_params={'indent': 2}
         ).content)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
-        self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, None)
-        self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertIn('GET', log.request)
+        self.assertEqual(
+            "GET;/query;[('reerenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T')];HTTP/1.1",
+            log.request)
         self.assertEqual(log.status_code, 400)
-        self.assertIsInstance(log.response_size, int)
 
     def test_get_query_with_assemblyId(self):
         self.assertEqual(LogEntry.objects.count(), 0)
         response = self.client.get(reverse("query"), {"referenceName": 1,
-                                                      "start": 12345,
+                                                      "start": 12344,
                                                       "end": 12345,
                                                       "referenceBases": "C",
                                                       "alternateBases": "T",
@@ -154,7 +219,7 @@ class TestCaseQueryEndpoint(TestCase):
             "exists": False,
             "error": None,
             "alleleRequest": {"referenceName": "1",
-                              "start": "12345",
+                              "start": "12344",
                               "end": "12345",
                               "referenceBases": "C",
                               "alternateBases": "T",
@@ -164,62 +229,27 @@ class TestCaseQueryEndpoint(TestCase):
         }, json_dumps_params={'indent': 2}
         ).content)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
-        self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, self.remote_site_public)
-        self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertIn('GET', log.request)
+        self.assertEqual(
+            "GET;/query;[('referenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T'), ('assemblyId', 'GRCh38')];HTTP/1.1",
+            log.request)
         self.assertEqual(log.status_code, 200)
-        self.assertIsInstance(log.response_size, int)
 
     def test_get_query_authorization_with_key(self):
         response = self.client.get(reverse("query"), {
             "referenceName": 1,
-            "start": 12345,
+            "start": 12344,
             "end": 12345,
             "referenceBases": "C",
-            "alternateBases": "T"}, AUTHORIZATION='xxx')
-        # self.assertEqual("Authorization", self.client.headers)
+            "alternateBases": "T"}, HTTP_AUTHORIZATION='xxx')
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser.key, "xxx")
 
-    def test_post_query(self):
-        response = self.client.post(reverse("query"), {"referenceName": 1,
-                                                       "start": 12345,
-                                                       "end": 12345,
-                                                       "referenceBases": "C",
-                                                       "alternateBases": "T"}
-                                    )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": False,
-            "error": None,
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12345",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
-        log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
-        self.assertEqual(log.user_identifier, None)
-        self.assertEqual(log.authuser, self.remote_site_public)
-        self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertIn('POST', log.request)
-        self.assertEqual(log.status_code, 200)
-        self.assertIsInstance(log.response_size, int)
-
     def test_get_query_authorization_without_key(self):
         response = self.client.get(reverse("query"), {"Authorization": "",
                                                       "referenceName": 1,
-                                                      "start": 12345,
+                                                      "start": 12344,
                                                       "end": 12345,
                                                       "referenceBases": "C",
                                                       "alternateBases": "T"}
@@ -228,7 +258,7 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, self.remote_site_public)
         response = self.client.get(reverse("query"), {"referenceName": 1,
-                                                      "start": 12345,
+                                                      "start": 12344,
                                                       "end": 12345,
                                                       "referenceBases": "C",
                                                       "alternateBases": "T"}
@@ -238,12 +268,12 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.authuser, self.remote_site_public)
 
     def test_get_query_authorization_invalid_key(self):
-        response = self.client.get(reverse("query"), {"Authorization": "xy",
-                                                      "referenceName": 1,
-                                                      "start": 12345,
+        response = self.client.get(reverse("query"), {"referenceName": 1,
+                                                      "start": 12344,
                                                       "end": 12345,
                                                       "referenceBases": "C",
-                                                      "alternateBases": "T"}
+                                                      "alternateBases": "T"},
+                                   HTTP_AUTHORIZATION="xy"
                                    )
         self.assertEqual(response.content, JsonResponse({
             "beaconId": str(self.metadata_beacon.beacon_id),
@@ -255,7 +285,7 @@ class TestCaseQueryEndpoint(TestCase):
 
             },
             "alleleRequest": {"referenceName": "1",
-                              "start": "12345",
+                              "start": "12344",
                               "end": "12345",
                               "referenceBases": "C",
                               "alternateBases": "T",
@@ -271,12 +301,12 @@ class TestCaseQueryEndpoint(TestCase):
 
     def test_get_query_exceeded_access_limit(self):
         remote_site_zero_access = RemoteSiteFactory(key="0_access", access_limit=0)
-        response = self.client.get(reverse("query"), {"Authorization": "0_access",
-                                                      "referenceName": 1,
-                                                      "start": 12345,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T"}
+        response = self.client.get(reverse("query"), {
+            "referenceName": 1,
+            "start": 12344,
+            "end": 12345,
+            "referenceBases": "C",
+            "alternateBases": "T"}, HTTP_AUTHORIZATION="0_access"
                                    )
         self.assertEqual(response.content, JsonResponse({
             "beaconId": str(self.metadata_beacon.beacon_id),
@@ -288,7 +318,7 @@ class TestCaseQueryEndpoint(TestCase):
 
             },
             "alleleRequest": {"referenceName": "1",
-                              "start": "12345",
+                              "start": "12344",
                               "end": "12345",
                               "referenceBases": "C",
                               "alternateBases": "T",
@@ -301,6 +331,107 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, remote_site_zero_access)
         self.assertEqual(log.status_code, 403)
+
+    def test_get_query_no_project_permission(self):
+        p = ProjectFactory()
+        con = ConsortiumFactory(projects=None)
+        c = CaseFactory(project=p)
+        VariantFactory(case=c)
+        PhenotypeFactory(case=c)
+        RemoteSiteFactory(key="x", consortia=[con])
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Consortium.objects.count(), 1)
+        self.assertEqual(Case.objects.count(), 1)
+        self.assertEqual(Variant.objects.count(), 1)
+        self.assertEqual(Phenotype.objects.count(), 1)
+        self.assertEqual(RemoteSite.objects.count(), 3)
+        response = self.client.get(reverse("query"), {
+            "referenceName": 1,
+            "start": 12344,
+            "end": 12345,
+            "referenceBases": "C",
+            "alternateBases": "T"}, HTTP_AUTHORIZATION="x"
+                                   )
+        self.assertEqual(response.content, JsonResponse({
+            "beaconId": str(self.metadata_beacon.beacon_id),
+            "apiVersion": self.metadata_beacon.api_version,
+            "exists": False,
+            "error": None,
+            "alleleRequest": {"referenceName": "1",
+                              "start": "12344",
+                              "end": "12345",
+                              "referenceBases": "C",
+                              "alternateBases": "T",
+                              "assemblyId": "GRCh37"
+                              },
+            "datasetAlleleResponses": [],
+        }, json_dumps_params={'indent': 2}
+        ).content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(LogEntry.objects.count(), 1)
+
+    def test_get_query_mixed_vis_level(self):
+        p1 = ProjectFactory()
+        p2 = ProjectFactory()
+        p3 = ProjectFactory()
+        con1 = ConsortiumFactory(projects=[p1], visibility_level=0)
+        con2 = ConsortiumFactory(projects=[p1, p2], visibility_level=15)
+        con3 = ConsortiumFactory(projects=[p3], visibility_level=20)
+        c1 = CaseFactory(project=p1)
+        c2 = CaseFactory(project=p1)
+        c3 = CaseFactory(project=p2, structure="quartet", inheritance="dominant")
+        c4 = CaseFactory(project=p2, structure="quartet", inheritance="dominant")
+        c5 = CaseFactory(project=p3, structure="quartet", inheritance="dominant")
+        VariantFactory(case=c1, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
+        VariantFactory(case=c2, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
+        VariantFactory(case=c3, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
+        VariantFactory(case=c4, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
+        VariantFactory(case=c5, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
+        PhenotypeFactory(case=c1)
+        PhenotypeFactory(case=c2)
+        PhenotypeFactory(case=c3)
+        PhenotypeFactory(case=c4)
+        PhenotypeFactory(case=c5)
+        RemoteSiteFactory(key="x", consortia=[con1, con2, con3])
+        self.assertEqual(Project.objects.count(), 3)
+        self.assertEqual(Consortium.objects.count(), 3)
+        self.assertEqual(Case.objects.count(), 5)
+        self.assertEqual(Variant.objects.count(), 5)
+        self.assertEqual(Phenotype.objects.count(), 5)
+        self.assertEqual(RemoteSite.objects.count(), 3)
+        response = self.client.get(reverse("query"), {
+            "referenceName": 1,
+            "start": 12344,
+            "end": 12345,
+            "referenceBases": "C",
+            "alternateBases": "T"}, HTTP_AUTHORIZATION="x"
+                                   )
+        self.assertEqual(response.content, JsonResponse({
+            "beaconId": str(self.metadata_beacon.beacon_id),
+            "apiVersion": self.metadata_beacon.api_version,
+            "exists": True,
+            "error": None,
+            "alleleRequest": {"referenceName": "1",
+                              "start": "12344",
+                              "end": "12345",
+                              "referenceBases": "C",
+                              "alternateBases": "T",
+                              "assemblyId": "GRCh37"
+                              },
+            "datasetAlleleResponses": [{"exists": True,
+                                        "sampleCount": 11,
+                                        "variantCount>10": True,
+                                        "variantCount": 8,
+                                        "frequency": 0.36,
+                                        "coarsePhenotype": [],
+                                        "phenotype": ["HP:0001039", "HP:0001049"],
+                                        "caseName": ["index_015-N1-DNA1-WES1", "index_016-N1-DNA1-WES1"],
+                                        "error": None
+                                        }, ],
+        }, json_dumps_params={'indent': 2}
+        ).content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(LogEntry.objects.count(), 1)
 
     def test_query_check_query_input(self):
         c = CaseQueryEndpoint()

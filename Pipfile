@@ -10,6 +10,8 @@ obonet = "*"
 factory-boy = "*"
 django-nose = "*"
 coverage = "*"
+pandas = "*"
+matplotlib = "*"
 
 [dev-packages]
 

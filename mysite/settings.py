@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import obonet
 from pathlib import Path
+import networkx
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -120,15 +121,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000
+HPO_GRAPH_PATH = "http://purl.obolibrary.org/obo/hp.obo"
+HPO_GRAPH = obonet.read_obo(HPO_GRAPH_PATH).reverse()
+#TODO: check 4 is a good depth,
+HPO_COARSE_TERMS = {k for k, v in networkx.algorithms.shortest_path_length(HPO_GRAPH, list({n for n, d in HPO_GRAPH.in_degree() if d == 0})[0]).items() if v == 4}
 
-#HPO_GRAPH_PATH = os.environ.get('HPO_GRAPH_PATH', "http://purl.obolibrary.org/obo/hp.obo")
-HPO_GRAPH = obonet.read_obo("http://purl.obolibrary.org/obo/hp.obo")
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
 NOSE_ARGS = [
     '--with-coverage',
     '--cover-package=beacon',
-    #'--cover-html'
+    '--cover-html'
 ]

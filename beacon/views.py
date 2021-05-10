@@ -49,7 +49,7 @@ class CaseInfoEndpoint(View):
                  user_identifier=request.META.get('USER'),
                  authuser=RemoteSite.objects.get(name='public'),
                  date_time=datetime.now(),
-                 request=("%s %s %s" % (request.method, request.body, request.META["SERVER_PROTOCOL"])),
+                 request=("%s;%s;%s" % (request.method, request.get_full_path(), request.META["SERVER_PROTOCOL"])),
                  status_code=output.status_code,
                  response_size=len(output.content)).save()
         return output
@@ -97,6 +97,7 @@ class CaseQueryEndpoint(View):
             output_json = QueryResponse(beacon_id, api_version, allele_request).create_dict()
             if self._check_query_input(chromosome, start, end, reference, alternative):
                 output_json["error"] = Error(400, "The input format is invalid.").create_dict()
+                remote_site = [None]
                 raise UnboundLocalError()
             if "Authorization" in request.headers:
                 key = request.headers["Authorization"]
@@ -105,6 +106,7 @@ class CaseQueryEndpoint(View):
             remote_site = self._authenticate(key)
             if not list(remote_site):
                 output_json["error"] = Error(401, "You are not authorized as a user.").create_dict()
+                remote_site = [None]
                 raise UnboundLocalError()
             if self._check_access_limit(remote_site[0]):
                 output_json["error"] = Error(403, "You have exceeded your access limit.").create_dict()
@@ -120,16 +122,20 @@ class CaseQueryEndpoint(View):
                 output_json["exists"] = False
             else:
                 output_json["exists"] = True
-                output_json["datasetAlleleResponses"] = query_parameters.create_dict()
+                output_json["datasetAlleleResponses"] = [query_parameters.create_dict()]
             output = JsonResponse(output_json, json_dumps_params={'indent': 2})
         except UnboundLocalError:  # Not authenticated or invalid arguments
             output = JsonResponse(output_json, status=output_json["error"]["errorCode"],
                                   json_dumps_params={'indent': 2})
+        if request.method == "GET":
+            query_dict = request.GET.items()
+        else:
+            query_dict = request.POST.items()
         LogEntry(ip_address=request.META.get('REMOTE_ADDR'),
                  user_identifier=request.META.get('USER'),
                  authuser=remote_site[0],
                  date_time=datetime.now(),
-                 request=("%s %s %s" % (request.method, request.body, request.META["SERVER_PROTOCOL"])),
+                 request=("%s;%s;%s;%s" % (request.method, request.path, str(list(query_dict)), request.META["SERVER_PROTOCOL"])),
                  status_code=output.status_code,
                  response_size=len(output.content)).save()
         return output
@@ -137,7 +143,6 @@ class CaseQueryEndpoint(View):
     def _check_query_input(self, chromosome, start, end, reference, alternative):
         """
         input: query string from request
-        # RegisterForm
         checks if input is valid and assigns to variables
 
         :rtype: bool False if input is correct, true
@@ -149,18 +154,20 @@ class CaseQueryEndpoint(View):
         alternative_pattern = re.compile(r"[ACGT]+")
         try:
             if re.fullmatch(chromosome_pattern, chromosome) is None:
-                return 1
+                return True
             if re.fullmatch(start_pattern, start) is None:
-                return 1
+                return True
             if re.fullmatch(end_pattern, end) is None:
-                return 1
+                return True
             if re.fullmatch(reference_pattern, reference) is None:
-                return 1
+                return True
             if re.fullmatch(alternative_pattern, alternative) is None:
-                return 1
+                return True
+            if int(start) > int(end):
+                return True
         except TypeError:
-            return 1
-        return 0
+            return True
+        return False
 
     def _authenticate(self, key):
         """
@@ -172,11 +179,10 @@ class CaseQueryEndpoint(View):
 
     def _check_access_limit(self, remote_site):
         """
-        # logging in setting by file?
         :rtype: object
         """
         access_limit = remote_site.access_limit
-        if LogEntry.objects.filter(authuser=remote_site, date_time__contains=date.today()).count() > access_limit:
+        if LogEntry.objects.filter(authuser=remote_site, date_time__contains=date.today()).count() >= access_limit:
             return True
         else:
             return False
@@ -188,16 +194,19 @@ class CaseQueryEndpoint(View):
 
         """
         variant_query = CaseQueryVariant()
+        start_1_based = int(start) + 1
         variants = Variant.objects.filter(chromosome=chromosome,
-                                          start=start,
-                                          reference=reference,
-                                          end=end,
-                                          alternative=alternative,
+                                          start=start_1_based,
                                           release=release,
+                                          end=end,
+                                          reference=reference,
+                                          alternative=alternative,
                                           case__project__consortium__in=consortium.all()).distinct()
         for v in variants:
             variant_query.exists = True
             visibility_level = self._get_highest_vis_level(v.case.project, consortium)
+            if visibility_level == 25:
+                variant_query.make_query_25(v)
             if visibility_level == 20:
                 variant_query.make_query_20(v)
             if visibility_level == 15:
@@ -208,9 +217,16 @@ class CaseQueryEndpoint(View):
                 variant_query.make_query_5(v)
             if visibility_level == 0:
                 variant_query.make_query_0(v)
+        if variant_query.sample_count != 0:
+            if chromosome == 'Y':
+                variant_query.frequency = variant_query.variant_count / variant_query.sample_count
+            else:
+                variant_query.frequency = variant_query.variant_count / (variant_query.sample_count*2)
         return AlleleResponse(variant_query.exists,
-                              variant_query.allele_count_greater_ten,
-                              variant_query.allele_count,
+                              variant_query.sample_count,
+                              variant_query.variant_count_greater_ten,
+                              variant_query.variant_count,
+                              round(variant_query.frequency, 2),
                               variant_query.coarse_phenotypes,
                               variant_query.phenotypes,
                               variant_query.case_indices)

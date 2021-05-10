@@ -1,6 +1,5 @@
 from django.test import TestCase
 import django
-import factory
 from ..models import (
         Variant,
         Phenotype,
@@ -70,12 +69,10 @@ class TestPhenotype(TestCase):
 
     def test_get_coarse_phenotype(self):
         coarse_phenotype = self.phenotype.get_coarse_phenotype()
-        self.assertIsInstance(coarse_phenotype, list)
-        self.assertIn("HP:0000079", coarse_phenotype)
+        self.assertIsInstance(coarse_phenotype, set)
+        self.assertIn("HP:0010935", coarse_phenotype)
         coarse_phenotype_already_coarse = PhenotypeFactory(phenotype="HP:0000118").get_coarse_phenotype()
-        self.assertEqual(coarse_phenotype_already_coarse, ["HP:0000118"])
-        coarse_phenotype_already_coarse_root = PhenotypeFactory(phenotype="HP:0000001").get_coarse_phenotype()
-        self.assertEqual(coarse_phenotype_already_coarse_root, ["HP:0000001"])
+        self.assertEqual(coarse_phenotype_already_coarse, {"HP:0000118"})
 
 
 class TestConsortium(TestCase):

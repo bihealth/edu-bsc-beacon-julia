@@ -1,9 +1,6 @@
 from django.db import models
 import networkx
-import obonet
-
-HPO_GRAPH_PATH = "http://purl.obolibrary.org/obo/hp.obo"
-HPO_GRAPH = obonet.read_obo(HPO_GRAPH_PATH)
+from mysite.settings import HPO_COARSE_TERMS, HPO_GRAPH
 
 
 class Project(models.Model):
@@ -34,10 +31,35 @@ class Variant(models.Model):
     """
     A VarFish variant.
     """
+    CHROMOSOME_CHOICES = [
+        (1, "1"),
+        (2, "2"),
+        (3, "3"),
+        (4, "4"),
+        (5, "5"),
+        (6, "6"),
+        (7, "7"),
+        (8, "8"),
+        (9, "9"),
+        (10, "10"),
+        (11, "11"),
+        (12, "12"),
+        (13, "13"),
+        (14, "14"),
+        (15, "15"),
+        (16, "16"),
+        (17, "17"),
+        (18, "18"),
+        (19, "19"),
+        (20, "20"),
+        (21, "21"),
+        (22, "X"),
+        (23, "Y"),
+    ]
     #: Genome build
     release = models.CharField(max_length=32)
     #: Variant coordinates - chromosome
-    chromosome = models.CharField(max_length=32)
+    chromosome = models.IntegerField(choices=CHROMOSOME_CHOICES)
     #: Variant coordinates - 1-based start position
     start = models.IntegerField()
     #: Variant coordinates - end position
@@ -82,18 +104,11 @@ class Phenotype(models.Model):
         ]
 
     def get_coarse_phenotype(self):
-        """"""
-        #TODO: check 4 is a good depth
-        coarse_terms = []
-        if self.phenotype == "HP:0000001":
-            coarse_terms.append(self.phenotype)
-        for path in networkx.algorithms.all_simple_paths(HPO_GRAPH, source=self.phenotype, target='HP:0000001'):
-            distance = len(path)
-            if distance > 4:
-                coarse_terms.append(path[distance-4])
-            else:
-                coarse_terms.append(self.phenotype)
-        return coarse_terms
+        coarse_phenotypes = networkx.algorithms.ancestors(HPO_GRAPH, self.phenotype).intersection(HPO_COARSE_TERMS)
+        if coarse_phenotypes == set():
+            return {self.phenotype}
+        else:
+            return coarse_phenotypes
 
 
 class Consortium(models.Model):
@@ -129,7 +144,7 @@ class RemoteSite(models.Model):
     #: Access limit per day
     access_limit = models.IntegerField()
     #: The consortium containing this remote site.
-    consortia = models.ManyToManyField(Consortium, blank=True, null=True, help_text="Consortium to which this object belongs.")
+    consortia = models.ManyToManyField(Consortium, blank=True, help_text="Consortium to which this object belongs.")
 
 
 class LogEntry(models.Model):

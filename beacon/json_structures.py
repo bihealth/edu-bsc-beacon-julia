@@ -40,9 +40,9 @@ class AlleleResponse:
         self.variant_count_greater_ten = variant_count_greater_ten
         self.variant_count = variant_count
         self.frequency = frequency
-        self.coarse_phenotype = coarse_phenotype
-        self.phenotype = phenotype
-        self.case_indices = case_indices
+        self.coarse_phenotype = sorted(list(coarse_phenotype))
+        self.phenotype = sorted(list(phenotype))
+        self.case_indices = sorted(case_indices)
         self.error = None
 
     def create_dict(self):
