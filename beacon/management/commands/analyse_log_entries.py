@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from beacon.models import LogEntry, RemoteSite
 import pandas as pd
 import numpy as np
@@ -7,9 +7,17 @@ import matplotlib.pyplot as plt
 
 
 class Command(BaseCommand):
+    """
+    Custom commands for the admin.
+    """
     help = 'Creates a statistical overview about the logged requests'
 
     def add_arguments(self, parser):
+        """
+        Defines the flags given to the command.
+
+        :param parser: parser object
+        """
         parser.add_argument('--path', type=str, help="Given path to directory where to save the data")
         parser.add_argument(
             '--as_csv',
@@ -23,13 +31,22 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        """
+        Creates a statistical overview of the logged requests.
+
+        :param args:
+        :param options: Flags for optional create csv file, save plots in given directory
+        and define to be observed time period
+        :return: A stdout string if successful otherwise returns an error.
+        """
         plt.style.use('seaborn-bright')
         if options["path"]:
             path = options["path"]
             try:
                 os.chdir(path)
             except OSError:
-                return self.stderr.write(self.style.ERROR("Couldn't find the directory or permission for the directory is missing: " + path))
+                return self.stderr.write(
+                    self.style.ERROR("Couldn't find the directory or permission for the directory is missing: " + path))
         methods = []
         endpoints = []
         user_identifiers = []
@@ -44,32 +61,38 @@ class Command(BaseCommand):
         starts = []
         ends = []
         releases = []
+        cases = []
+        projects = []
         for l in LogEntry.objects.all()[len(LogEntry.objects.all()) - 13:]:  # TODO: all again
-            method, endpoint, reference, alternative, chromosome, start, end, release = self._read_in_request(
-                l.request)
-            methods.append(method)
-            endpoints.append(endpoint)
-            user_identifiers.append(l.user_identifier)
-            ip_addresses.append(l.ip_address)
-            if l.authuser_id is None:
-                authuser_names.append(None)
-            else:
-                authuser_names.append(RemoteSite.objects.get(id=l.authuser_id).name)
-            date_times.append(l.date_time)
-            status_codes.append(l.status_code)
-            response_sizes.append(l.response_size)
-            references.append(reference)
-            alternatives.append(alternative)
-            chromosomes.append(chromosome)
-            starts.append(start)
-            ends.append(end)
-            releases.append(release)
+            for c in l.cases.all():
+                cases.append(c.name)
+                projects.append(c.project.title)
+                method, endpoint, reference, alternative, chromosome, start, end, release = self._read_in_request(
+                    l.request)
+                methods.append(method)
+                endpoints.append(endpoint)
+                user_identifiers.append(l.user_identifier)
+                ip_addresses.append(l.ip_address)
+                if l.authuser_id is None:
+                    authuser_names.append(None)
+                else:
+                    authuser_names.append(RemoteSite.objects.get(id=l.authuser_id).name)
+                date_times.append(l.date_time)
+                status_codes.append(l.status_code)
+                response_sizes.append(l.response_size)
+                references.append(reference)
+                alternatives.append(alternative)
+                chromosomes.append(chromosome)
+                starts.append(start)
+                ends.append(end)
+                releases.append(release)
         log_data = pd.DataFrame(data={"method": methods,
                                       "endpoint": endpoints,
                                       "user_identifier": user_identifiers,
                                       "ip_address": ip_addresses,
                                       "authuser_name": authuser_names,
-                                      "date_time": [pd.to_datetime(d).tz_localize(None) for d in date_times], #time zone removed
+                                      "date_time": [pd.to_datetime(d).tz_localize(None) for d in date_times],
+                                      # time zone removed
                                       "status_code": status_codes,
                                       "response_size": response_sizes,
                                       "reference": references,
@@ -77,7 +100,9 @@ class Command(BaseCommand):
                                       "chromosome": chromosomes,
                                       "start": starts,
                                       "end": ends,
-                                      "release": releases})
+                                      "release": releases,
+                                      "cases": cases,
+                                      "projects": projects})
         if options["as_csv"]:
             log_data.to_csv("log_entry_data.csv")
         log_data_indexed = log_data.set_index("date_time")
@@ -92,27 +117,41 @@ class Command(BaseCommand):
             log_data_indexed = log_data_indexed.loc[time_start:time_end]
             if log_data_indexed.empty:
                 return self.stdout.write(self.style.WARNING("WARNING: No data available for the given time period."))
-        fig, ax = plt.subplots(figsize=(15, 7)) #TODO: headlines for all plots, label="Number of request per endpoint"
-        #log_data_indexed.groupby([log_data_indexed.index.year, log_data_indexed.index.month, "endpoint"]).size().unstack().plot(kind='bar', ax=ax, ylabel="Number of requests", xlabel="Time period")
-        log_data_indexed.groupby([log_data_indexed.index.year, log_data_indexed.index.month, log_data_indexed.index.day, "authuser_name"]).size().unstack().plot(kind='line', ax=ax, ylabel="Number of requests", xlabel="Time period", ylim=(0, 10000))
+        fig, ax = plt.subplots(figsize=(15, 7))  # TODO: headlines for all plots, label="Number of request per endpoint"
+        # log_data_indexed.groupby([log_data_indexed.index.year, log_data_indexed.index.month, "endpoint"]).size().unstack().plot(kind='bar', ax=ax, ylabel="Number of requests", xlabel="Time period")
+        log_data_indexed.groupby([log_data_indexed.index.year, log_data_indexed.index.month, log_data_indexed.index.day,
+                                  "authuser_name"]).size().unstack().plot(kind='line', ax=ax,
+                                                                          ylabel="Number of requests",
+                                                                          xlabel="Time period", ylim=(0, 10000))
         if options["path"]:
             plt.savefig("calls_per_endpoint.pdf")
             if options["as_csv"]:
                 try:
                     log_data.to_csv("log_entry_data.csv")
                 except OSError:
-                    return self.stderr.write(self.style.ERROR("You have no writing permission for the current directory." ))
+                    return self.stderr.write(
+                        self.style.ERROR("You have no writing permission for the current directory."))
         else:
             plt.show()
             if options["as_csv"]:
                 try:
                     log_data.to_csv("log_entry_data.csv")
-                    self.stdout.write(self.style.WARNING("WARNING: The log_entry_data.csv file was saved in the current working directory."))
+                    self.stdout.write(self.style.WARNING(
+                        "WARNING: The log_entry_data.csv file was saved in the current working directory."))
                 except OSError:
-                    return self.stderr.write(self.style.ERROR("You have no writing permission for the current directory." ))
-        return self.stdout.write(self.style.SUCCESS("A statistical overview of the logged requests was created successfully."))
+                    return self.stderr.write(
+                        self.style.ERROR("You have no writing permission for the current directory."))
+        return self.stdout.write(
+            self.style.SUCCESS("A statistical overview of the logged requests was created successfully."))
 
     def _read_in_request(self, request_field):
+        """
+        Reads the request string data containing the method, query string dictionary and the server protocol.
+
+        :param request_field: string of request of LogEntry object
+        :return: a string for the method, the endpoint, the reference base, the alternative base, the chromosome,
+        the start position, the end position, the release
+        """
         request_info_list = request_field.split(";")
         method = request_info_list[0]
         endpoint = request_info_list[1]

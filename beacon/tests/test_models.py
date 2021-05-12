@@ -1,30 +1,30 @@
 from django.test import TestCase
 import django
 from ..models import (
-        Variant,
-        Phenotype,
-        Case,
-        Project,
-        LogEntry,
-        MetadataBeacon,
-        MetadataBeaconOrganization,
-        MetadataBeaconDataset,
-        RemoteSite,
-        Consortium
-    )
+    Variant,
+    Phenotype,
+    Case,
+    Project,
+    # LogEntry,
+    MetadataBeacon,
+    MetadataBeaconOrganization,
+    MetadataBeaconDataset,
+    RemoteSite,
+    Consortium,
+)
 
 from .factories import (
-        VariantFactory,
-        PhenotypeFactory,
-        CaseFactory,
-        ProjectFactory,
-       # LogEntryFactory,
-        MetadataBeaconFactory,
-        MetadataBeaconOrganizationFactory,
-        MetadataBeaconDatasetFactory,
-        RemoteSiteFactory,
-        ConsortiumFactory
-    )
+    VariantFactory,
+    PhenotypeFactory,
+    CaseFactory,
+    ProjectFactory,
+    # LogEntryFactory,
+    MetadataBeaconFactory,
+    MetadataBeaconOrganizationFactory,
+    MetadataBeaconDatasetFactory,
+    RemoteSiteFactory,
+    ConsortiumFactory,
+)
 
 
 class TestProject(TestCase):
@@ -43,19 +43,38 @@ class TestCase(TestCase):
 
 class TestVariant(TestCase):
     def setUp(self):
-        self.variant = VariantFactory()
+        self.variant_autosome = VariantFactory(chromosome=1)
+        self.variant_allosome_X = VariantFactory(chromosome=23)
+        self.variant_allosome_Y = VariantFactory(chromosome=24)
 
     def test_create(self):
-        self.assertEqual(Variant.objects.count(), 1)
+        self.assertEqual(Variant.objects.count(), 3)
         VariantFactory()
-        self.assertEqual(Variant.objects.count(), 2)
+        self.assertEqual(Variant.objects.count(), 4)
 
-    def test_get_variant_sample_count(self):
-        variant_count, sample_count = self.variant.get_variant_sample_count()
-        self.assertIsInstance(variant_count, int)
+    def test_get_variant_sample_count_autosome(self):
+        (
+            variant_count,
+            sample_count,
+            frequency_count,
+        ) = self.variant_autosome.get_variant_sample_frequency_count()
         self.assertEqual(variant_count, 1)
-        self.assertIsInstance(sample_count, int)
         self.assertEqual(sample_count, 1)
+        self.assertEqual(frequency_count, 2)
+
+    def test_get_variant_sample_count_allosome(self):
+        (
+            variant_count,
+            sample_count,
+            frequency_count,
+        ) = self.variant_allosome_X.get_variant_sample_frequency_count()
+        self.assertEqual(frequency_count, 1)
+        (
+            variant_count,
+            sample_count,
+            frequency_count,
+        ) = self.variant_allosome_Y.get_variant_sample_frequency_count()
+        self.assertEqual(frequency_count, 1)
 
 
 class TestPhenotype(TestCase):
@@ -71,7 +90,9 @@ class TestPhenotype(TestCase):
         coarse_phenotype = self.phenotype.get_coarse_phenotype()
         self.assertIsInstance(coarse_phenotype, set)
         self.assertIn("HP:0010935", coarse_phenotype)
-        coarse_phenotype_already_coarse = PhenotypeFactory(phenotype="HP:0000118").get_coarse_phenotype()
+        coarse_phenotype_already_coarse = PhenotypeFactory(
+            phenotype="HP:0000118"
+        ).get_coarse_phenotype()
         self.assertEqual(coarse_phenotype_already_coarse, {"HP:0000118"})
 
 
@@ -90,16 +111,17 @@ class TestRemoteSite(TestCase):
 
     def test_key_unique(self):
         RemoteSiteFactory(key="x")
-        self.assertRaises(django.db.utils.IntegrityError, RemoteSiteFactory, key='x')
+        self.assertRaises(django.db.utils.IntegrityError, RemoteSiteFactory, key="x")
 
-#TODO: test logentry
-#class TestCaseLogEntry(TestCase):
-    #def setUp(self):
 
- #   def testCreate(self):
-   #     self.assertEqual(LogEntry.objects.count(), 0)
-  #      LogEntryFactory()
-    #    self.assertEqual(LogEntry.objects.count(), 1
+# TODO: test logentry
+# class TestCaseLogEntry(TestCase):
+# def setUp(self):
+
+#   def testCreate(self):
+#     self.assertEqual(LogEntry.objects.count(), 0)
+#      LogEntryFactory()
+#    self.assertEqual(LogEntry.objects.count(), 1
 
 
 class TestMetadataBeacon(TestCase):

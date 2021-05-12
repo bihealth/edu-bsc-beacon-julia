@@ -10,10 +10,18 @@ from .factories import (
     ConsortiumFactory,
     CaseFactory,
     ProjectFactory,
-    PhenotypeFactory
+    PhenotypeFactory,
 )
 from ..views import CaseQueryEndpoint
-from ..models import LogEntry, RemoteSite, Variant, Project, Phenotype, Case, Consortium
+from ..models import (
+    LogEntry,
+    RemoteSite,
+    Variant,
+    Project,
+    Phenotype,
+    Case,
+    Consortium,
+)
 from django.http import JsonResponse
 from django.test import Client
 
@@ -21,46 +29,56 @@ from django.test import Client
 class TestCaseInfoEndpoint(TestCase):
     def setUp(self):
         self.client = Client()
-        ## TODO: MetadataEndpointFactory()
+        # TODO: MetadataEndpointFactory()
         self.metadata_beacon = MetadataBeaconFactory()
-        self.metadata_organization = MetadataBeaconOrganizationFactory(metadata_beacon=self.metadata_beacon)
-        self.metadata_dataset = MetadataBeaconDatasetFactory(metadata_beacon=self.metadata_beacon)
-        self.remote_site = RemoteSiteFactory(name='public')
+        self.metadata_organization = MetadataBeaconOrganizationFactory(
+            metadata_beacon=self.metadata_beacon
+        )
+        self.metadata_dataset = MetadataBeaconDatasetFactory(
+            metadata_beacon=self.metadata_beacon
+        )
+        self.remote_site = RemoteSiteFactory(name="public")
 
     def test_get_info(self):
         self.assertEqual(LogEntry.objects.count(), 0)
-        response = self.client.get(reverse('info'))
+        response = self.client.get(reverse("info"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.content,
-            JsonResponse({
-                "id": str(self.metadata_beacon.beacon_id),
-                "name": self.metadata_beacon.name,
-                "apiVersion": self.metadata_beacon.api_version,
-                "datasets": [
-                    {
-                        "id": str(self.metadata_dataset.beacon_data_id),
-                        "name": self.metadata_dataset.name,
-                        "assemblyId": self.metadata_dataset.assembly_id,
-                        "createDateTime": str(self.metadata_dataset.create_date_time),
-                        "updateDateTime": str(self.metadata_dataset.update_date_time),
-                    }
-                ],
-                "organization": {
-                    "id": str(self.metadata_organization.beacon_org_id),
-                    "name": self.metadata_organization.name,
-                    "contactUrl": self.metadata_organization.contact_url,
+            JsonResponse(
+                {
+                    "id": str(self.metadata_beacon.beacon_id),
+                    "name": self.metadata_beacon.name,
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "datasets": [
+                        {
+                            "id": str(self.metadata_dataset.beacon_data_id),
+                            "name": self.metadata_dataset.name,
+                            "assemblyId": self.metadata_dataset.assembly_id,
+                            "createDateTime": str(
+                                self.metadata_dataset.create_date_time
+                            ),
+                            "updateDateTime": str(
+                                self.metadata_dataset.update_date_time
+                            ),
+                        }
+                    ],
+                    "organization": {
+                        "id": str(self.metadata_organization.beacon_org_id),
+                        "name": self.metadata_organization.name,
+                        "contactUrl": self.metadata_organization.contact_url,
+                    },
                 },
-
-            }, json_dumps_params={'indent': 2}
-            ).content)
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         self.assertEqual(LogEntry.objects.count(), 1)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertEqual(log.ip_address, "127.0.0.1")
         self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, self.remote_site)
         self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertEqual('GET;/;HTTP/1.1', log.request)
+        self.assertEqual("GET;/;HTTP/1.1", log.request)
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
@@ -69,102 +87,144 @@ class TestCaseQueryEndpoint(TestCase):
     def setUp(self):
         self.client = Client()
         self.metadata_beacon = MetadataBeaconFactory()
-        self.metadata_organization = MetadataBeaconOrganizationFactory(metadata_beacon=self.metadata_beacon)
-        self.metadata_dataset = MetadataBeaconDatasetFactory(metadata_beacon=self.metadata_beacon)
-        self.remote_site_public = RemoteSiteFactory(name='public', key='public')
-        self.remote_site_xxx = RemoteSiteFactory(key='xxx')
+        self.metadata_organization = MetadataBeaconOrganizationFactory(
+            metadata_beacon=self.metadata_beacon
+        )
+        self.metadata_dataset = MetadataBeaconDatasetFactory(
+            metadata_beacon=self.metadata_beacon
+        )
+        self.remote_site_public = RemoteSiteFactory(name="public", key="public")
+        self.remote_site_xxx = RemoteSiteFactory(key="xxx")
 
     def test_get_query(self):
-        response = self.client.get(reverse("query"), {"referenceName": 1,
-                                                      "start": 12344,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T"}
-                                   )
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": False,
-            "error": None,
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": False,
+                    "error": None,
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertEqual(log.ip_address, "127.0.0.1")
         self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, self.remote_site_public)
         self.assertIsInstance(log.date_time, datetime.datetime)
         self.assertEqual(
-            "GET;/query;[('referenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T')];HTTP/1.1",
-            log.request)
+            "GET;/query;[('referenceName', '1'),/"
+            " ('start', '12344'),/"
+            " ('end', '12345'),/"
+            " ('referenceBases', 'C'),/"
+            " ('alternateBases', 'T')];HTTP/1.1",
+            log.request,
+        )
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
     def test_post_query(self):
-        response = self.client.post(reverse("query"), {"referenceName": 1,
-                                                       "start": 12344,
-                                                       "end": 12345,
-                                                       "referenceBases": "C",
-                                                       "alternateBases": "T"}
-                                    )
+        response = self.client.post(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": False,
-            "error": None,
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": False,
+                    "error": None,
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.ip_address, '127.0.0.1')
+        self.assertEqual(log.ip_address, "127.0.0.1")
         self.assertEqual(log.user_identifier, None)
         self.assertEqual(log.authuser, self.remote_site_public)
         self.assertIsInstance(log.date_time, datetime.datetime)
         self.assertEqual(
-            "POST;/query;[('referenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T')];HTTP/1.1",
-            log.request)
+            "POST;/"
+            "/query;/"
+            "[('referenceName', '1'),/"
+            " ('start', '12344'),/"
+            " ('end', '12345'),/"
+            " ('referenceBases', 'C'),/"
+            " ('alternateBases', 'T')];/"
+            "HTTP/1.1",
+            log.request,
+        )
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
     def test_get_query_no_input(self):
         self.assertEqual(LogEntry.objects.count(), 0)
-        response = self.client.get(reverse('query'))
+        response = self.client.get(reverse("query"))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": None,
-            "error": {
-                "errorCode": 400,
-                "errorMessage": "The input format is invalid."
-
-            },
-            "alleleRequest": {"referenceName": None,
-                              "start": None,
-                              "end": None,
-                              "referenceBases": None,
-                              "alternateBases": None,
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": None,
+                    "error": {
+                        "errorCode": 400,
+                        "errorMessage": "The input format is invalid.",
+                    },
+                    "alleleRequest": {
+                        "referenceName": None,
+                        "start": None,
+                        "end": None,
+                        "referenceBases": None,
+                        "alternateBases": None,
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, None)
         self.assertEqual("GET;/query;[];HTTP/1.1", log.request)
@@ -172,128 +232,191 @@ class TestCaseQueryEndpoint(TestCase):
 
     def test_get_query_invalid_input(self):
         self.assertEqual(LogEntry.objects.count(), 0)
-        response = self.client.get(reverse("query"), {"reerenceName": 1,
-                                                      "start": 12344,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T"})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": None,
-            "error": {
-                "errorCode": 400,
-                "errorMessage": "The input format is invalid."
-
+        response = self.client.get(
+            reverse("query"),
+            {
+                "reerenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
             },
-            "alleleRequest": {"referenceName": None,
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": None,
+                    "error": {
+                        "errorCode": 400,
+                        "errorMessage": "The input format is invalid.",
+                    },
+                    "alleleRequest": {
+                        "referenceName": None,
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, None)
         self.assertEqual(
-            "GET;/query;[('reerenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T')];HTTP/1.1",
-            log.request)
+            "GET;/"
+            "/query;/"
+            "[('reerenceName', '1'),/"
+            " ('start', '12344'),/"
+            " ('end', '12345'),/"
+            " ('referenceBases', 'C'),/"
+            " ('alternateBases', 'T')];/"
+            "HTTP/1.1",
+            log.request,
+        )
         self.assertEqual(log.status_code, 400)
 
     def test_get_query_with_assemblyId(self):
         self.assertEqual(LogEntry.objects.count(), 0)
-        response = self.client.get(reverse("query"), {"referenceName": 1,
-                                                      "start": 12344,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T",
-                                                      "assemblyId": "GRCh38"})
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+                "assemblyId": "GRCh38",
+            },
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": False,
-            "error": None,
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh38"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": False,
+                    "error": None,
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh38",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, self.remote_site_public)
         self.assertEqual(
-            "GET;/query;[('referenceName', '1'), ('start', '12344'), ('end', '12345'), ('referenceBases', 'C'), ('alternateBases', 'T'), ('assemblyId', 'GRCh38')];HTTP/1.1",
-            log.request)
+            "GET;/"
+            "/query;/"
+            "[('referenceName', '1'),/"
+            " ('start', '12344'),/"
+            " ('end', '12345'),/"
+            " ('referenceBases', 'C'),/"
+            " ('alternateBases', 'T'),/"
+            " ('assemblyId', 'GRCh38')];/"
+            "HTTP/1.1",
+            log.request,
+        )
         self.assertEqual(log.status_code, 200)
 
-    def test_get_query_authorization_with_key(self):
-        response = self.client.get(reverse("query"), {
-            "referenceName": 1,
-            "start": 12344,
-            "end": 12345,
-            "referenceBases": "C",
-            "alternateBases": "T"}, HTTP_AUTHORIZATION='xxx')
+    def test_get_query_authorization_with_key_and_user_identifier(self):
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+            HTTP_AUTHORIZATION="xxx",
+            HTTP_X_REMOTE_USER="user",
+        )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser.key, "xxx")
+        self.assertEqual(log.user_identifier, "user")
 
-    def test_get_query_authorization_without_key(self):
-        response = self.client.get(reverse("query"), {"Authorization": "",
-                                                      "referenceName": 1,
-                                                      "start": 12344,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T"}
-                                   )
+    def test_get_query_authorization_without_key_and_user_identifier(self):
+        response = self.client.get(
+            reverse("query"),
+            {
+                "Authorization": "",
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+        )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, self.remote_site_public)
-        response = self.client.get(reverse("query"), {"referenceName": 1,
-                                                      "start": 12344,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T"}
-                                   )
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+        )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[1]
         self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.user_identifier, None)
 
     def test_get_query_authorization_invalid_key(self):
-        response = self.client.get(reverse("query"), {"referenceName": 1,
-                                                      "start": 12344,
-                                                      "end": 12345,
-                                                      "referenceBases": "C",
-                                                      "alternateBases": "T"},
-                                   HTTP_AUTHORIZATION="xy"
-                                   )
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": None,
-            "error": {
-                "errorCode": 401,
-                "errorMessage": "You are not authorized as a user."
-
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
             },
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+            HTTP_AUTHORIZATION="xy",
+        )
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": None,
+                    "error": {
+                        "errorCode": 401,
+                        "errorMessage": "You are not authorized as a user.",
+                    },
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         self.assertEqual(response.status_code, 401)
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, None)
@@ -301,32 +424,41 @@ class TestCaseQueryEndpoint(TestCase):
 
     def test_get_query_exceeded_access_limit(self):
         remote_site_zero_access = RemoteSiteFactory(key="0_access", access_limit=0)
-        response = self.client.get(reverse("query"), {
-            "referenceName": 1,
-            "start": 12344,
-            "end": 12345,
-            "referenceBases": "C",
-            "alternateBases": "T"}, HTTP_AUTHORIZATION="0_access"
-                                   )
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": None,
-            "error": {
-                "errorCode": 403,
-                "errorMessage": "You have exceeded your access limit."
-
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
             },
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+            HTTP_AUTHORIZATION="0_access",
+        )
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": None,
+                    "error": {
+                        "errorCode": 403,
+                        "errorMessage": "You have exceeded your access limit.",
+                    },
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         self.assertEqual(response.status_code, 403)
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, remote_site_zero_access)
@@ -345,28 +477,38 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(Variant.objects.count(), 1)
         self.assertEqual(Phenotype.objects.count(), 1)
         self.assertEqual(RemoteSite.objects.count(), 3)
-        response = self.client.get(reverse("query"), {
-            "referenceName": 1,
-            "start": 12344,
-            "end": 12345,
-            "referenceBases": "C",
-            "alternateBases": "T"}, HTTP_AUTHORIZATION="x"
-                                   )
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": False,
-            "error": None,
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+            HTTP_AUTHORIZATION="x",
+        )
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": False,
+                    "error": None,
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(LogEntry.objects.count(), 1)
 
@@ -382,11 +524,46 @@ class TestCaseQueryEndpoint(TestCase):
         c3 = CaseFactory(project=p2, structure="quartet", inheritance="dominant")
         c4 = CaseFactory(project=p2, structure="quartet", inheritance="dominant")
         c5 = CaseFactory(project=p3, structure="quartet", inheritance="dominant")
-        VariantFactory(case=c1, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
-        VariantFactory(case=c2, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
-        VariantFactory(case=c3, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
-        VariantFactory(case=c4, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
-        VariantFactory(case=c5, chromosome=1, start=12345, end=12345, reference="C", alternative="T")
+        v1 = VariantFactory(
+            case=c1,
+            chromosome=1,
+            start=12345,
+            end=12345,
+            reference="C",
+            alternative="T",
+        )
+        v2 = VariantFactory(
+            case=c2,
+            chromosome=1,
+            start=12345,
+            end=12345,
+            reference="C",
+            alternative="T",
+        )
+        VariantFactory(
+            case=c3,
+            chromosome=1,
+            start=12345,
+            end=12345,
+            reference="C",
+            alternative="T",
+        )
+        VariantFactory(
+            case=c4,
+            chromosome=1,
+            start=12345,
+            end=12345,
+            reference="C",
+            alternative="T",
+        )
+        VariantFactory(
+            case=c5,
+            chromosome=1,
+            start=12345,
+            end=12345,
+            reference="C",
+            alternative="T",
+        )
         PhenotypeFactory(case=c1)
         PhenotypeFactory(case=c2)
         PhenotypeFactory(case=c3)
@@ -399,39 +576,53 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(Variant.objects.count(), 5)
         self.assertEqual(Phenotype.objects.count(), 5)
         self.assertEqual(RemoteSite.objects.count(), 3)
-        response = self.client.get(reverse("query"), {
-            "referenceName": 1,
-            "start": 12344,
-            "end": 12345,
-            "referenceBases": "C",
-            "alternateBases": "T"}, HTTP_AUTHORIZATION="x"
-                                   )
-        self.assertEqual(response.content, JsonResponse({
-            "beaconId": str(self.metadata_beacon.beacon_id),
-            "apiVersion": self.metadata_beacon.api_version,
-            "exists": True,
-            "error": None,
-            "alleleRequest": {"referenceName": "1",
-                              "start": "12344",
-                              "end": "12345",
-                              "referenceBases": "C",
-                              "alternateBases": "T",
-                              "assemblyId": "GRCh37"
-                              },
-            "datasetAlleleResponses": [{"exists": True,
-                                        "sampleCount": 11,
-                                        "variantCount>10": True,
-                                        "variantCount": 8,
-                                        "frequency": 0.36,
-                                        "coarsePhenotype": [],
-                                        "phenotype": ["HP:0001039", "HP:0001049"],
-                                        "caseName": ["index_015-N1-DNA1-WES1", "index_016-N1-DNA1-WES1"],
-                                        "error": None
-                                        }, ],
-        }, json_dumps_params={'indent': 2}
-        ).content)
+        response = self.client.get(
+            reverse("query"),
+            {
+                "referenceName": 1,
+                "start": 12344,
+                "end": 12345,
+                "referenceBases": "C",
+                "alternateBases": "T",
+            },
+            HTTP_AUTHORIZATION="x",
+        )
+        self.assertEqual(
+            response.content,
+            JsonResponse(
+                {
+                    "beaconId": str(self.metadata_beacon.beacon_id),
+                    "apiVersion": self.metadata_beacon.api_version,
+                    "exists": True,
+                    "error": None,
+                    "alleleRequest": {
+                        "referenceName": "1",
+                        "start": "12344",
+                        "end": "12345",
+                        "referenceBases": "C",
+                        "alternateBases": "T",
+                        "assemblyId": "GRCh37",
+                    },
+                    "datasetAlleleResponses": [
+                        {
+                            "exists": True,
+                            "sampleCount": 11,
+                            "variantCount>10": True,
+                            "variantCount": 8,
+                            "frequency": 0.36,
+                            "coarsePhenotype": [],
+                            "phenotype": ["HP:0001039", "HP:0001049"],
+                            "caseName": [str(v1.case.index), str(v2.case.index)],
+                            "error": None,
+                        },
+                    ],
+                },
+                json_dumps_params={"indent": 2},
+            ).content,
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(LogEntry.objects.count(), 1)
+        log = LogEntry.objects.all()[0]
+        self.assertEqual(log.cases.all()[::1], [c1, c2, c3, c4, c5])
 
     def test_query_check_query_input(self):
         c = CaseQueryEndpoint()
@@ -440,11 +631,25 @@ class TestCaseQueryEndpoint(TestCase):
         end = "12346"
         reference = "CC"
         alternative = "T"
-        self.assertEqual(c._check_query_input(chromosome, start, end, reference, alternative), False)
+        self.assertEqual(
+            c._check_query_input(chromosome, start, end, reference, alternative), False
+        )
         for i in enumerate(list(range(1, 23)) + ["X", "Y"]):
-            self.assertEqual(c._check_query_input(i, start, end, reference, alternative), True)
-        self.assertEqual(c._check_query_input(chromosome, "x", end, reference, alternative), True)
-        self.assertEqual(c._check_query_input(chromosome, start, "x", reference, alternative), True)
-        self.assertEqual(c._check_query_input(chromosome, start, end, "H", alternative), True)
-        self.assertEqual(c._check_query_input(chromosome, start, end, reference, "H"), True)
-        self.assertEqual(c._check_query_input(chromosome, start, "1234", reference, "H"), True)
+            self.assertEqual(
+                c._check_query_input(i, start, end, reference, alternative), True
+            )
+        self.assertEqual(
+            c._check_query_input(chromosome, "x", end, reference, alternative), True
+        )
+        self.assertEqual(
+            c._check_query_input(chromosome, start, "x", reference, alternative), True
+        )
+        self.assertEqual(
+            c._check_query_input(chromosome, start, end, "H", alternative), True
+        )
+        self.assertEqual(
+            c._check_query_input(chromosome, start, end, reference, "H"), True
+        )
+        self.assertEqual(
+            c._check_query_input(chromosome, start, "1234", reference, "H"), True
+        )

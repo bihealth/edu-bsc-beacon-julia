@@ -9,9 +9,10 @@ from .models import (
     MetadataBeacon,
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
-    RemoteSite
+    RemoteSite,
 )
-# Register your models here.
+
+# To be registered models
 admin.site.register(
     (
         Variant,
@@ -23,6 +24,6 @@ admin.site.register(
         MetadataBeaconOrganization,
         MetadataBeaconDataset,
         RemoteSite,
-        Consortium
+        Consortium,
     )
 )

@@ -1,24 +1,23 @@
 from django.test import TestCase
 from ..queries import CaseQueryVariant
-from .factories import (
-        VariantFactory,
-        PhenotypeFactory,
-        CaseFactory
-    )
+from .factories import VariantFactory, PhenotypeFactory, CaseFactory
 
 
 class TestQueryVariant(TestCase):
     def setUp(self):
         self.case = CaseFactory()
-        self.variant = VariantFactory(case=self.case)
+        self.variant = VariantFactory(case=self.case, chromosome=1)
         self.case_query_variant = CaseQueryVariant()
-        self.phenotype = PhenotypeFactory(case=self.variant.case, phenotype="HP:0001049")
+        self.phenotype = PhenotypeFactory(
+            case=self.variant.case, phenotype="HP:0001049"
+        )
 
     def test_create(self):
         self.assertEqual(self.case_query_variant.exists, False)
         self.assertEqual(self.case_query_variant.variant_count_greater_ten, False)
         self.assertEqual(self.case_query_variant.variant_count, 0)
         self.assertEqual(self.case_query_variant.internal_variant_count, 0)
+        self.assertEqual(self.case_query_variant.frequency_count, 0)
         self.assertEqual(self.case_query_variant.frequency, 0)
         self.assertEqual(self.case_query_variant.coarse_phenotypes, set())
         self.assertEqual(self.case_query_variant.phenotypes, set())
@@ -31,6 +30,7 @@ class TestQueryVariant(TestCase):
         self.assertEqual(self.case_query_variant.variant_count_greater_ten, False)
         self.assertEqual(self.case_query_variant.variant_count, 0)
         self.assertEqual(self.case_query_variant.internal_variant_count, 0)
+        self.assertEqual(self.case_query_variant.frequency_count, 2)
         self.assertEqual(self.case_query_variant.frequency, 0)
         self.assertEqual(self.case_query_variant.coarse_phenotypes, set())
         self.assertEqual(self.case_query_variant.phenotypes, set())
@@ -101,7 +101,9 @@ class TestQueryVariant(TestCase):
             self.assertEqual(self.case_query_variant.internal_variant_count, 0)
             self.assertEqual(self.case_query_variant.coarse_phenotypes, set())
             self.assertNotEqual(self.case_query_variant.phenotypes, set())
-            self.assertListEqual(self.case_query_variant.case_indices, [self.variant.case.index]*i)
+            self.assertListEqual(
+                self.case_query_variant.case_indices, [self.variant.case.index] * i
+            )
         self.case_query_variant.make_query_0(self.variant)
         self.assertEqual(self.case_query_variant.variant_count_greater_ten, True)
         self.assertEqual(self.case_query_variant.frequency, 0)

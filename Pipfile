@@ -12,6 +12,8 @@ django-nose = "*"
 coverage = "*"
 pandas = "*"
 matplotlib = "*"
+black = "*"
+flake8 = "*"
 
 [dev-packages]
 

@@ -22,7 +22,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Project
 
-    title = factory.Sequence(lambda n: 'Project %d' % n)
+    title = factory.Sequence(lambda n: "Project %d" % n)
 
 
 class CaseFactory(factory.django.DjangoModelFactory):
@@ -42,19 +42,21 @@ class CaseFactory(factory.django.DjangoModelFactory):
         inheritance = "denovo"
 
     project = factory.SubFactory(ProjectFactory)
-    name = factory.LazyAttributeSequence(lambda o, n: "case %03d: %s" % (n, o.structure))
+    name = factory.LazyAttributeSequence(
+        lambda o, n: "case %03d: %s" % (n, o.structure)
+    )
     index = factory.Sequence(lambda n: "index_%03d-N1-DNA1-WES1" % n)
     pedigree = []
 
     @factory.lazy_attribute_sequence
     def pedigree(self, n):
         if self.structure not in (
-                "singleton",
-                "duo",
-                "trio",
-                "trio-noparents",
-                "quartet",
-                "quintet",
+            "singleton",
+            "duo",
+            "trio",
+            "trio-noparents",
+            "quartet",
+            "quintet",
         ):
             raise ValueError("Invalid structure type!")
         elif self.structure == "singleton":
@@ -237,7 +239,9 @@ class CaseFactory(factory.django.DjangoModelFactory):
             ]
 
 
-CHROMOSOME_MAPPING = {str(chrom): i + 1 for i, chrom in enumerate(list(range(1, 23)) + ["X", "Y"])}
+CHROMOSOME_MAPPING = {
+    str(chrom): i + 1 for i, chrom in enumerate(list(range(1, 23)) + ["X", "Y"])
+}
 
 
 class VariantFactory(factory.django.DjangoModelFactory):
@@ -249,7 +253,9 @@ class VariantFactory(factory.django.DjangoModelFactory):
     release = "GRCh37"
     chromosome = factory.Iterator(list(CHROMOSOME_MAPPING.keys()))
     start = factory.Sequence(lambda n: (n + 1) * 100)
-    end = factory.LazyAttribute(lambda o: o.start + len(o.reference) - len(o.alternative))
+    end = factory.LazyAttribute(
+        lambda o: o.start + len(o.reference) - len(o.alternative)
+    )
     reference = factory.Iterator("ACGT")
     alternative = factory.Iterator("CGTA")
     case = factory.SubFactory(CaseFactory)
@@ -288,7 +294,7 @@ class ConsortiumFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Consortium
 
-    name = factory.Sequence(lambda n: 'Consortium %d' % n)
+    name = factory.Sequence(lambda n: "Consortium %d" % n)
     visibility_level = factory.Iterator(list(VISIBILITY_LEVEL_MAPPING.keys()))
 
     @factory.post_generation
@@ -310,8 +316,14 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
         model = RemoteSite
 
     name = factory.Sequence(lambda n: "Remote Site %d" % n)
-    key = factory.Sequence(lambda n: "".join(
-        random.choices(string.ascii_lowercase + string.digits + string.ascii_uppercase, k=7)) + "%d" % n)
+    key = factory.Sequence(
+        lambda n: "".join(
+            random.choices(
+                string.ascii_lowercase + string.digits + string.ascii_uppercase, k=7
+            )
+        )
+        + "%d" % n
+    )
     access_limit = factory.Sequence(lambda n: (n + 1) * 10)
 
     @factory.post_generation
@@ -368,9 +380,9 @@ class MetadataBeaconOrganizationFactory(factory.django.DjangoModelFactory):
     beacon_org_id = factory.Sequence(lambda n: "Id %d" % n)
     #: Name of the organization.
     name = factory.Sequence(lambda n: "Organization %d" % n)
-    # : URL with the contact for the beacon operator/maintainer, e.g. link to a contact form (RFC 3986 format) or an
-    # email (RFC 2368 format).
-    contact_url = factory.LazyAttribute(lambda obj: '%s.com' % obj.name)
+    #: URL with the contact for the beacon operator/maintainer,
+    # e.g. link to a contact form (RFC 3986 format) or an email (RFC 2368 format).
+    contact_url = factory.LazyAttribute(lambda obj: "%s.com" % obj.name)
     #: Beacon ID which this organization hosts.
     metadata_beacon = factory.SubFactory(MetadataBeaconFactory)
 
@@ -388,8 +400,12 @@ class MetadataBeaconDatasetFactory(factory.django.DjangoModelFactory):
     #: Assembly identifier.
     assembly_id = "GRCh37"
     #: The time the dataset was created (ISO 8601 format).
-    create_date_time = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
+    create_date_time = factory.Faker(
+        "date_time", tzinfo=timezone.get_current_timezone()
+    )
     #: The time the dataset was updated in (ISO 8601 format).
-    update_date_time = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
+    update_date_time = factory.Faker(
+        "date_time", tzinfo=timezone.get_current_timezone()
+    )
     #: Beacon ID which this organisation hosts.
     metadata_beacon = factory.SubFactory(MetadataBeaconFactory)
