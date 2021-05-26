@@ -135,11 +135,14 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.authuser, self.remote_site_public)
         self.assertIsInstance(log.date_time, datetime.datetime)
         self.assertEqual(
-            "GET;/query;[('referenceName', '1'),/"
-            " ('start', '12344'),/"
-            " ('end', '12345'),/"
-            " ('referenceBases', 'C'),/"
-            " ('alternateBases', 'T')];HTTP/1.1",
+            "GET;"
+            "/query;"
+            "[('referenceName', '1'),"
+            " ('start', '12344'),"
+            " ('end', '12345'),"
+            " ('referenceBases', 'C'),"
+            " ('alternateBases', 'T')];"
+            "HTTP/1.1",
             log.request,
         )
         self.assertEqual(log.status_code, 200)
@@ -184,13 +187,13 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.authuser, self.remote_site_public)
         self.assertIsInstance(log.date_time, datetime.datetime)
         self.assertEqual(
-            "POST;/"
-            "/query;/"
-            "[('referenceName', '1'),/"
-            " ('start', '12344'),/"
-            " ('end', '12345'),/"
-            " ('referenceBases', 'C'),/"
-            " ('alternateBases', 'T')];/"
+            "POST;"
+            "/query;"
+            "[('referenceName', '1'),"
+            " ('start', '12344'),"
+            " ('end', '12345'),"
+            " ('referenceBases', 'C'),"
+            " ('alternateBases', 'T')];"
             "HTTP/1.1",
             log.request,
         )
@@ -226,7 +229,7 @@ class TestCaseQueryEndpoint(TestCase):
             ).content,
         )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, None)
+        self.assertEqual(log.authuser, self.remote_site_public)
         self.assertEqual("GET;/query;[];HTTP/1.1", log.request)
         self.assertEqual(log.status_code, 400)
 
@@ -268,15 +271,15 @@ class TestCaseQueryEndpoint(TestCase):
             ).content,
         )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, None)
+        self.assertEqual(log.authuser, self.remote_site_public)
         self.assertEqual(
-            "GET;/"
-            "/query;/"
-            "[('reerenceName', '1'),/"
-            " ('start', '12344'),/"
-            " ('end', '12345'),/"
-            " ('referenceBases', 'C'),/"
-            " ('alternateBases', 'T')];/"
+            "GET;"
+            "/query;"
+            "[('reerenceName', '1'),"
+            " ('start', '12344'),"
+            " ('end', '12345'),"
+            " ('referenceBases', 'C'),"
+            " ('alternateBases', 'T')];"
             "HTTP/1.1",
             log.request,
         )
@@ -320,14 +323,14 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.authuser, self.remote_site_public)
         self.assertEqual(
-            "GET;/"
-            "/query;/"
-            "[('referenceName', '1'),/"
-            " ('start', '12344'),/"
-            " ('end', '12345'),/"
-            " ('referenceBases', 'C'),/"
-            " ('alternateBases', 'T'),/"
-            " ('assemblyId', 'GRCh38')];/"
+            "GET;"
+            "/query;"
+            "[('referenceName', '1'),"
+            " ('start', '12344'),"
+            " ('end', '12345'),"
+            " ('referenceBases', 'C'),"
+            " ('alternateBases', 'T'),"
+            " ('assemblyId', 'GRCh38')];"
             "HTTP/1.1",
             log.request,
         )
@@ -516,14 +519,22 @@ class TestCaseQueryEndpoint(TestCase):
         p1 = ProjectFactory()
         p2 = ProjectFactory()
         p3 = ProjectFactory()
+        p4 = ProjectFactory()
+        p5 = ProjectFactory()
+        p6 = ProjectFactory()
         con1 = ConsortiumFactory(projects=[p1], visibility_level=0)
-        con2 = ConsortiumFactory(projects=[p1, p2], visibility_level=15)
-        con3 = ConsortiumFactory(projects=[p3], visibility_level=20)
+        con2 = ConsortiumFactory(projects=[p3], visibility_level=5)
+        con3 = ConsortiumFactory(projects=[p2], visibility_level=20)
+        con4 = ConsortiumFactory(projects=[p1, p2], visibility_level=15)
+        con5 = ConsortiumFactory(projects=[p4], visibility_level=10)
+        con6 = ConsortiumFactory(projects=[p5], visibility_level=20)
+        con7 = ConsortiumFactory(projects=[p6], visibility_level=25)
         c1 = CaseFactory(project=p1)
         c2 = CaseFactory(project=p1)
         c3 = CaseFactory(project=p2, structure="quartet", inheritance="dominant")
         c4 = CaseFactory(project=p2, structure="quartet", inheritance="dominant")
         c5 = CaseFactory(project=p3, structure="quartet", inheritance="dominant")
+        c6 = CaseFactory(project=p6, structure="quartet", inheritance="dominant")
         v1 = VariantFactory(
             case=c1,
             chromosome=1,
@@ -564,16 +575,24 @@ class TestCaseQueryEndpoint(TestCase):
             reference="C",
             alternative="T",
         )
+        VariantFactory(
+            case=c6,
+            chromosome=1,
+            start=12345,
+            end=12345,
+            reference="C",
+            alternative="T",
+        )
         PhenotypeFactory(case=c1)
         PhenotypeFactory(case=c2)
         PhenotypeFactory(case=c3)
         PhenotypeFactory(case=c4)
         PhenotypeFactory(case=c5)
-        RemoteSiteFactory(key="x", consortia=[con1, con2, con3])
-        self.assertEqual(Project.objects.count(), 3)
-        self.assertEqual(Consortium.objects.count(), 3)
-        self.assertEqual(Case.objects.count(), 5)
-        self.assertEqual(Variant.objects.count(), 5)
+        RemoteSiteFactory(key="x", consortia=[con1, con2, con3, con4, con5, con6, con7])
+        self.assertEqual(Project.objects.count(), 6)
+        self.assertEqual(Consortium.objects.count(), 7)
+        self.assertEqual(Case.objects.count(), 6)
+        self.assertEqual(Variant.objects.count(), 6)
         self.assertEqual(Phenotype.objects.count(), 5)
         self.assertEqual(RemoteSite.objects.count(), 3)
         response = self.client.get(
@@ -606,12 +625,12 @@ class TestCaseQueryEndpoint(TestCase):
                     "datasetAlleleResponses": [
                         {
                             "exists": True,
-                            "sampleCount": 11,
+                            "sampleCount": 14,
                             "variantCount>10": True,
-                            "variantCount": 8,
-                            "frequency": 0.36,
+                            "variantCount": 11,
+                            "frequency": 0.39,
                             "coarsePhenotype": [],
-                            "phenotype": ["HP:0001039", "HP:0001049"],
+                            "phenotype": ["HP:0001039", "HP:0001049", "HP:0001166"],
                             "caseName": [str(v1.case.index), str(v2.case.index)],
                             "error": None,
                         },
@@ -622,7 +641,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.cases.all()[::1], [c1, c2, c3, c4, c5])
+        self.assertEqual(log.cases.all()[::1], [c1, c2, c3, c4, c5, c6])
 
     def test_query_check_query_input(self):
         c = CaseQueryEndpoint()
@@ -651,5 +670,5 @@ class TestCaseQueryEndpoint(TestCase):
             c._check_query_input(chromosome, start, end, reference, "H"), True
         )
         self.assertEqual(
-            c._check_query_input(chromosome, start, "1234", reference, "H"), True
+            c._check_query_input(chromosome, start, "1234", reference, alternative), True
         )

@@ -150,12 +150,6 @@ class CaseQueryEndpoint(View):
             output_json = QueryResponse(
                 beacon_id, api_version, allele_request
             ).create_dict()
-            if self._check_query_input(chromosome, start, end, reference, alternative):
-                output_json["error"] = Error(
-                    400, "The input format is invalid."
-                ).create_dict()
-                remote_site = [None]
-                raise UnboundLocalError()
             if "Authorization" in request.headers:
                 key = request.headers["Authorization"]
             else:
@@ -166,6 +160,11 @@ class CaseQueryEndpoint(View):
                     401, "You are not authorized as a user."
                 ).create_dict()
                 remote_site = [None]
+                raise UnboundLocalError()
+            if self._check_query_input(chromosome, start, end, reference, alternative):
+                output_json["error"] = Error(
+                    400, "The input format is invalid."
+                ).create_dict()
                 raise UnboundLocalError()
             if self._check_access_limit(remote_site[0]):
                 output_json["error"] = Error(
@@ -215,6 +214,7 @@ class CaseQueryEndpoint(View):
             response_size=len(output.content),
         )
         log_entry.save()
+        #TODO check if assignement not better done
         log_entry.cases.set(cases)
         return output
 

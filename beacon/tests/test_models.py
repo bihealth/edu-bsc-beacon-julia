@@ -5,7 +5,7 @@ from ..models import (
     Phenotype,
     Case,
     Project,
-    # LogEntry,
+    LogEntry,
     MetadataBeacon,
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
@@ -18,7 +18,7 @@ from .factories import (
     PhenotypeFactory,
     CaseFactory,
     ProjectFactory,
-    # LogEntryFactory,
+    LogEntryFactory,
     MetadataBeaconFactory,
     MetadataBeaconOrganizationFactory,
     MetadataBeaconDatasetFactory,
@@ -39,6 +39,13 @@ class TestCase(TestCase):
         self.assertEqual(Case.objects.count(), 0)
         CaseFactory()
         self.assertEqual(Case.objects.count(), 1)
+
+
+class TestLogEntry(TestCase):
+    def test_create(self):
+        self.assertEqual(LogEntry.objects.count(), 0)
+        LogEntryFactory()
+        self.assertEqual(LogEntry.objects.count(), 1)
 
 
 class TestVariant(TestCase):

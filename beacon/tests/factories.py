@@ -1,5 +1,8 @@
 import factory
+from factory import fuzzy
 from django.utils import timezone
+import numpy as np
+import datetime
 import random
 import string
 from ..models import (
@@ -51,12 +54,12 @@ class CaseFactory(factory.django.DjangoModelFactory):
     @factory.lazy_attribute_sequence
     def pedigree(self, n):
         if self.structure not in (
-            "singleton",
-            "duo",
-            "trio",
-            "trio-noparents",
-            "quartet",
-            "quintet",
+                "singleton",
+                "duo",
+                "trio",
+                "trio-noparents",
+                "quartet",
+                "quintet",
         ):
             raise ValueError("Invalid structure type!")
         elif self.structure == "singleton":
@@ -322,7 +325,7 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
                 string.ascii_lowercase + string.digits + string.ascii_uppercase, k=7
             )
         )
-        + "%d" % n
+                  + "%d" % n
     )
     access_limit = factory.Sequence(lambda n: (n + 1) * 10)
 
@@ -338,22 +341,75 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
                 self.consortia.add(consortium)
 
 
-# class LogEntryFactory(factory.django.DjangoModelFactory, RequestFactory):
-#    """Factory for creating ``LogEntry`` objects."""
+METHOD_MAPPING = {method: i + 1 for i, method in enumerate(["GET", "POST"])}
 
-# class Meta:
-#   model = LogEntry
 
-# ip_address =
-# user_identifier = factory.Sequence(lambda n: "User" % n)
-# date_time = factory.LazyFunction(datetime.now)
-# authuser = factory.SubFactory(RemoteSiteFactory)
+class LogEntryFactory(factory.django.DjangoModelFactory):
+    """Factory for creating ``LogEntry`` objects."""
 
-# @factory.lazy_attribute
-# def request(self):
-#    request = factory.SubFactory(RequestFactory).get
-# status_code = request.
-# response_size =
+    class Meta:
+        model = LogEntry
+
+    class Params:
+        endpoint = "\query"
+        exist = True
+        chromosome = factory.Iterator(list(CHROMOSOME_MAPPING.keys()))
+        start = factory.Sequence(lambda n: (n + 1) * 100)
+        end = factory.LazyAttribute(
+            lambda o: o.start + len(o.reference) - len(o.alternative)
+        )
+        reference = factory.Iterator(["ACGT"])
+        alternative = factory.Iterator(["CGTA"])
+        method = factory.Iterator(list(METHOD_MAPPING.keys()))
+        remote_site = factory.SubFactory(RemoteSiteFactory)
+
+    ip_address = factory.Sequence(lambda n: "100.0.0.%d" % n)
+    user_identifier = factory.Sequence(lambda n: "User_%d" % n)
+    date_time = factory.fuzzy.FuzzyDateTime(datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc), datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc))
+    response_size = 700
+
+    @factory.lazy_attribute
+    def status_code(self):
+        if self.endpoint is "\query":
+            return np.random.choice([200, 403, 400, 401], p=[0.8, 0.15, 0.025, 0.025], size=1)
+        else:
+            return 200
+
+    @factory.lazy_attribute
+    def authuser(self):
+        if self.status_code is not 401:
+            return self.remote_site
+        else:
+            return None
+
+    @factory.lazy_attribute
+    def request(self):
+        if self.endpoint == "\query":
+            if (self.status_code is 200) and self.exist:
+                request = ("[('referenceName', %s),"
+                           " ('start', %d),"
+                           " ('end', %d),"
+                           " ('referenceBases', %s),"
+                           " ('alternateBases', %s)]" % (self.chromosome, self.start, self.end, self.reference, self.alternative))
+            elif self.status_code is 400:
+                request = ("[('refereceName', %s),"
+                           " ('star', %s),"
+                           " ('ed', %s),"
+                           " ('referenceBase', %s),"
+                           " ('altenateBases', %s)]" % (self.chromosome, self.start, self.end, self.reference, self.alternative))
+            else:
+                request = str([])
+            return "%s;/query;%s;HTTP/1.1" % (self.method, request)
+        else:
+            return "GET;/;HTTP/1.1"
+
+    @factory.post_generation
+    def cases(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for case in extracted:
+                self.cases.add(case)
 
 
 class MetadataBeaconFactory(factory.django.DjangoModelFactory):

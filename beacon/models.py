@@ -9,7 +9,7 @@ class Project(models.Model):
     """
 
     #: Project title
-    title = models.CharField(max_length=255, null=True, help_text="Project title")
+    title = models.CharField(max_length=255, null=True, unique=True, help_text="Project title")
 
 
 class Case(models.Model):
@@ -26,9 +26,9 @@ class Case(models.Model):
         help_text="Project to which this object belongs.",
     )
     #: Name of this case
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     #: Index of this case
-    index = models.CharField(max_length=255)
+    index = models.CharField(max_length=255, unique=True)
     #: Pedigree containing information about the case family
     pedigree = models.JSONField()
 
@@ -173,7 +173,7 @@ class Consortium(models.Model):
         (25, "Level_exists_sample_count_visible"),
     ]
     #: Name of the consortium
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     #: Level of visibility of the variant data
     visibility_level = models.IntegerField(choices=VISIBILITY_LEVEL_CHOICES)
     #: The project containing this consortium
@@ -189,7 +189,7 @@ class RemoteSite(models.Model):
     """
 
     #: Name of the remote site
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     #: Authentication key
     key = models.CharField(max_length=255, unique=True)
     #: Access limit per day
