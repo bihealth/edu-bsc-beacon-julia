@@ -54,12 +54,12 @@ class CaseFactory(factory.django.DjangoModelFactory):
     @factory.lazy_attribute_sequence
     def pedigree(self, n):
         if self.structure not in (
-                "singleton",
-                "duo",
-                "trio",
-                "trio-noparents",
-                "quartet",
-                "quintet",
+            "singleton",
+            "duo",
+            "trio",
+            "trio-noparents",
+            "quartet",
+            "quintet",
         ):
             raise ValueError("Invalid structure type!")
         elif self.structure == "singleton":
@@ -325,7 +325,7 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
                 string.ascii_lowercase + string.digits + string.ascii_uppercase, k=7
             )
         )
-                  + "%d" % n
+        + "%d" % n
     )
     access_limit = factory.Sequence(lambda n: (n + 1) * 10)
 
@@ -365,13 +365,18 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
 
     ip_address = factory.Sequence(lambda n: "100.0.0.%d" % n)
     user_identifier = factory.Sequence(lambda n: "User_%d" % n)
-    date_time = factory.fuzzy.FuzzyDateTime(datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc), datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc))
+    date_time = factory.fuzzy.FuzzyDateTime(
+        datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc),
+        datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc),
+    )
     response_size = 700
 
     @factory.lazy_attribute
     def status_code(self):
         if self.endpoint is "\query":
-            return np.random.choice([200, 403, 400, 401], p=[0.8, 0.15, 0.025, 0.025], size=1)
+            return np.random.choice(
+                [200, 403, 400, 401], p=[0.8, 0.15, 0.025, 0.025], size=1
+            )
         else:
             return 200
 
@@ -386,17 +391,35 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
     def request(self):
         if self.endpoint == "\query":
             if (self.status_code is 200) and self.exist:
-                request = ("[('referenceName', %s),"
-                           " ('start', %d),"
-                           " ('end', %d),"
-                           " ('referenceBases', %s),"
-                           " ('alternateBases', %s)]" % (self.chromosome, self.start, self.end, self.reference, self.alternative))
+                request = (
+                    "[('referenceName', %s),"
+                    " ('start', %d),"
+                    " ('end', %d),"
+                    " ('referenceBases', %s),"
+                    " ('alternateBases', %s)]"
+                    % (
+                        self.chromosome,
+                        self.start,
+                        self.end,
+                        self.reference,
+                        self.alternative,
+                    )
+                )
             elif self.status_code is 400:
-                request = ("[('refereceName', %s),"
-                           " ('star', %s),"
-                           " ('ed', %s),"
-                           " ('referenceBase', %s),"
-                           " ('altenateBases', %s)]" % (self.chromosome, self.start, self.end, self.reference, self.alternative))
+                request = (
+                    "[('refereceName', %s),"
+                    " ('star', %s),"
+                    " ('ed', %s),"
+                    " ('referenceBase', %s),"
+                    " ('altenateBases', %s)]"
+                    % (
+                        self.chromosome,
+                        self.start,
+                        self.end,
+                        self.reference,
+                        self.alternative,
+                    )
+                )
             else:
                 request = str([])
             return "%s;/query;%s;HTTP/1.1" % (self.method, request)

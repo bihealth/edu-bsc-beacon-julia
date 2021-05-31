@@ -9,7 +9,9 @@ class Project(models.Model):
     """
 
     #: Project title
-    title = models.CharField(max_length=255, null=True, unique=True, help_text="Project title")
+    title = models.CharField(
+        max_length=255, null=True, unique=True, help_text="Project title"
+    )
 
 
 class Case(models.Model):

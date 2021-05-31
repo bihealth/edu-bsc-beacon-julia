@@ -48,21 +48,29 @@ class Command(BaseCommand):
             try:
                 time_start = pd.to_datetime(options["time_period"][0])
                 time_end = pd.to_datetime(options["time_period"][1])
-                if (time_start > time_end) or pd.isnull(time_start) or pd.isnull(time_end):
+                if (
+                    (time_start > time_end)
+                    or pd.isnull(time_start)
+                    or pd.isnull(time_end)
+                ):
                     raise Exception()
             except Exception:
                 return self.stdout.write(
-                    self.style.ERROR("ERROR: Your input format of the date_time is invalid.")
+                    self.style.ERROR(
+                        "ERROR: Your input format of the date_time is invalid."
+                    )
                 )
             if log_data_indexed.empty is False:
-                mask = (log_data_indexed.index > time_start) & (log_data_indexed.index <= time_end)
+                mask = (log_data_indexed.index > time_start) & (
+                    log_data_indexed.index <= time_end
+                )
                 log_data_indexed = log_data_indexed.loc[mask]
         if log_data_indexed.empty:
             return self.stdout.write(
                 self.style.WARNING(
-                        "WARNING: No data available for the given time period."
-                    )
+                    "WARNING: No data available for the given time period."
                 )
+            )
         plt.style.use("seaborn-bright")
         month_day = False
         if log_data_indexed.index.year.nunique() is 1:
@@ -71,50 +79,81 @@ class Command(BaseCommand):
         file_names = []
         fig1, ax1 = plt.subplots(1)
         fig2, ax2 = plt.subplots(1)
-        self._plot_endpoint_per_time(log_data_indexed, fig1, ax1, month_day, figures, file_names)
+        log_data_indexed.reset_index(level=0, inplace=True)
+        self._plot_endpoint_per_time(
+            log_data_indexed, fig1, ax1, month_day, figures, file_names
+        )
         figures.append(fig1)
         file_names.append("requests_per_endpoint.pdf")
-        self._plot_status_codes_per_time(log_data_indexed, fig2, ax2, month_day, figures, file_names)
+        self._plot_status_codes_per_time(
+            log_data_indexed, fig2, ax2, month_day, figures, file_names
+        )
         figures.append(fig2)
         file_names.append("status_codes_requests.pdf")
-        log_data_query = log_data_indexed.loc[log_data_indexed.endpoint == "query"]
+        log_data_query = log_data.loc[log_data.endpoint == "query"]
         if not log_data_query.empty:
-            log_data_query.reset_index(level=0, inplace=True)
             fig3, ax3 = plt.subplots(1)
-            self._plot_requests_per_authuser(log_data_query["remote site"], fig3, ax3, figures, file_names)
+            self._plot_requests_per_authuser(
+                log_data_query["remote site"], fig3, ax3, figures, file_names
+            )
             figures.append(fig3)
             file_names.append("requests_per_remote_site.pdf")
             fig4, ax4 = plt.subplots(1)
-            self._plot_identifier_per_variant_container(
-                log_data_query[["remote site", "case"]], fig4, ax4, "remote site", "case", figures, file_names
+            self._plot_remote_site_per_variant_container(
+                log_data_query[["remote site", "case"]],
+                fig4,
+                ax4,
+                "case",
+                figures,
+                file_names,
             )
             fig5, ax5 = plt.subplots(1)
-            self._plot_identifier_per_variant_container(
-                log_data_query[["remote site", "project"]], fig5, ax5, "remote site", "project", figures, file_names
+            self._plot_remote_site_per_variant_container(
+                log_data_query[["remote site", "project"]],
+                fig5,
+                ax5,
+                "project",
+                figures,
+                file_names,
             )
             fig6, ax6 = plt.subplots(1)
-            self._plot_identifier_per_variant_container(
-                log_data_query[["remote site user", "case"]], fig6,
+            self._plot_remote_site_user_per_variant_container(
+                log_data_query[["remote site user", "case", "remote site"]],
+                fig6,
                 ax6,
-                "remote site user",
-                "case", figures, file_names
+                "case",
+                figures,
+                file_names,
             )
             fig7, ax7 = plt.subplots(1)
-            self._plot_identifier_per_variant_container(
-                log_data_query[["remote site user", "project"]], fig7,
+            self._plot_remote_site_user_per_variant_container(
+                log_data_query[["remote site user", "project", "remote site"]],
+                fig7,
                 ax7,
-                "remote site user",
-                "project", figures, file_names
+                "project",
+                figures,
+                file_names,
             )
             fig8, ax8 = plt.subplots(1)
-            # ToDO: test no access_limit
-            self._plot_access_limit_per_authuser(log_data_query, fig8, ax8, figures, file_names)
+            self._plot_access_limit_per_authuser(
+                log_data_query, fig8, ax8, figures, file_names
+            )
             fig9, ax9 = plt.subplots(1)
             self._plot_table_top_requested_variants(
                 log_data_query[log_data_query["status code"] != 400][
-                    ["reference", "chromosome", "start", "end", "release", "alternative"]
+                    [
+                        "reference",
+                        "chromosome",
+                        "start",
+                        "end",
+                        "release",
+                        "alternative",
+                    ]
                 ],
-                fig9, ax9, figures, file_names
+                fig9,
+                ax9,
+                figures,
+                file_names,
             )
         else:
             self.stdout.write(
@@ -138,7 +177,7 @@ class Command(BaseCommand):
                     )
                 )
         else:
-            #plt.show()
+            # plt.show()
             if options["as_csv"]:
                 try:
                     log_data.to_csv("log_entry_data.csv")
@@ -295,20 +334,22 @@ class Command(BaseCommand):
             return method, "info", None, None, None, None, None, None
 
     def _plot_endpoint_per_time(self, data, fig, ax, month_day, figures, file_names):
+        endpoints_df = pd.DataFrame(data={})
+        for endpoint in data["endpoint"].unique():
+            endpoints_df[endpoint] = [int(d) for d in data["endpoint"] == endpoint]
+        endpoints_df["date_time"] = data["date_time"]
+        endpoints_df = endpoints_df.set_index("date_time")
         if month_day:
-            data.groupby(
-                [data.index.month, data.index.day, "endpoint"]
-            ).size().unstack().plot(
+            endpoints_df.groupby([endpoints_df.index]).sum().unstack().plot(
                 kind="line",
                 style=".-",
                 ax=ax,
                 ylabel="Number of requests",
-                xlabel="Time period (month, day)",
+                xlabel="Time period (year, month, day)",
             )
-
         else:
-            data.groupby(
-                [data.index.year, data.index.month, "endpoint"]
+            endpoints_df.groupby(
+                [endpoints_df.index.year, endpoints_df.index.month]
             ).size().unstack().plot(
                 kind="line",
                 style=".-",
@@ -321,21 +362,28 @@ class Command(BaseCommand):
         figures.append(fig)
         file_names.append("requests_per_endpoint.pdf")
 
-    def _plot_status_codes_per_time(self, data, fig, ax, month_day, figures, file_names):
+    def _plot_status_codes_per_time(
+        self, data, fig, ax, month_day, figures, file_names
+    ):
+        status_codes_df = pd.DataFrame(data={})
+        for status in data["status code"].unique():
+            status_codes_df[status] = [int(d) for d in data["status code"] == status]
+        status_codes_df["date_time"] = data["date_time"]
+        status_codes_df = status_codes_df.set_index("date_time")
         if month_day:
-            data.groupby(
-                [data.index.month, data.index.day, "status code"]
-            ).size().unstack().plot(
-                kind="bar",
+            status_codes_df.groupby([status_codes_df.index]).sum().plot(
+                kind="line",
+                style=".-",
                 ax=ax,
                 ylabel="Number of requests",
-                xlabel="Time period (month, day)",
+                xlabel="Time period (year, month, day)",
             )
         else:
-            data.groupby(
-                [data.index.year, data.index.month, "status code"]
+            status_codes_df.groupby(
+                [status_codes_df.index.year, status_codes_df.index.month]
             ).size().unstack().plot(
-                kind="bar",
+                kind="line",
+                style=".-",
                 ax=ax,
                 ylabel="Number of requests",
                 xlabel="Time period (year, month)",
@@ -345,51 +393,90 @@ class Command(BaseCommand):
         figures.append(fig)
         file_names.append("status_codes_requests.pdf")
 
+    """ def _plot_status_codes_per_time(
+            self, data, fig, ax, month_day, figures, file_names
+    ):
+        if month_day:
+            data.groupby(
+                [data.index.year, data.index.month, data.index.day, "status code"]
+            ).size().unstack().plot(
+                kind="line",
+                style=".-",
+                ax=ax,
+                ylabel="Number of requests",
+                xlabel="Time period (year, month, day)",
+            )
+        else:
+            data.groupby(
+                [data.index.year, data.index.month, "status code"]
+            ).size().unstack().plot(
+                kind="line",
+                style=".-",
+                ax=ax,
+                ylabel="Number of requests",
+                xlabel="Time period (year, month)",
+            )
+        ax.tick_params("x", labelrotation=360)
+        ax.set_title("Number of status codes from requests")
+        figures.append(fig)
+        file_names.append("status_codes_requests.pdf")
+    """
+
     def _plot_requests_per_authuser(self, data, fig, ax, figures, file_names):
-        data.value_counts().plot(
-            kind="bar", ax=ax, ylabel="Number of requests", xlabel="Authuser"
+        data.value_counts().head(15).plot(
+            kind="bar", ax=ax, ylabel="Number of requests", xlabel="Remote site"
         )
         ax.set_title("Number of requests per remote site")
         ax.tick_params("x", labelrotation=360)
         figures.append(fig)
         file_names.append("requests_per_remote_site.pdf")
 
-    def _plot_identifier_per_variant_container(
-        self, data, fig, ax, identifier, variant_container, figures,    file_names
+    def _plot_remote_site_per_variant_container(
+        self, data, fig, ax, variant_container, figures, file_names
     ):
         # read in data
-        identifiers = []
+        remote_sites = []
         variant_containers = []
         for i in range(0, len(data[variant_container])):
             for var_container in data[variant_container][i]:
                 variant_containers.append(var_container)
-                identifiers.append(data[identifier].loc[i])
+                remote_sites.append(data["remote site"].loc[i])
         case_project_data = pd.DataFrame(
             {
-                identifier: identifiers,
+                "remote site": remote_sites,
                 variant_container: variant_containers,
             }
         )
         if variant_containers:
             # count per identifier
-            table_count_authuser = case_project_data.pivot_table(
-                index=variant_container, columns=identifier, aggfunc="size"
+            table_count_remote_site = case_project_data.pivot_table(
+                index=variant_container, columns="remote site", aggfunc="size"
             )
             # get maximum count identifier and percentage
-            max_authuser = [
-                table_count_authuser.columns[
-                    np.argmax(table_count_authuser[table_count_authuser.index == c].max())
+            max_remote_site = [
+                table_count_remote_site.columns[
+                    np.argmax(
+                        table_count_remote_site[
+                            table_count_remote_site.index == c
+                        ].max()
+                    )
                 ]
-                for c in table_count_authuser.index
+                for c in table_count_remote_site.index
             ]
             max_percentage = sorted(
                 [
                     round(
-                        table_count_authuser[table_count_authuser.index == c].max().max()
-                        / sum(table_count_authuser[table_count_authuser.index == c].sum()),
+                        table_count_remote_site[table_count_remote_site.index == c]
+                        .max()
+                        .max()
+                        / sum(
+                            table_count_remote_site[
+                                table_count_remote_site.index == c
+                            ].sum()
+                        ),
                         2,
                     )
-                    for c in table_count_authuser.index
+                    for c in table_count_remote_site.index
                 ],
                 reverse=True,
             )
@@ -397,32 +484,32 @@ class Command(BaseCommand):
             total_call_counts = case_project_data.pivot_table(
                 index=variant_container, aggfunc="size"
             )
-            table_count_authuser["Maximal requesting remote site"] = max_authuser
             # create pivot table ofr plotting values
             table = pd.DataFrame(
                 {
                     "total_call_count": total_call_counts,
-                    "Maximal requesting remote site": max_authuser,
+                    "Maximal requesting identifier": max_remote_site,
                 }
             )
-            head_number = int(np.ceil(len(total_call_counts) * 0.1))
             table.sort_values("total_call_count", ascending=False).pivot_table(
                 index=table.index,
-                columns="Maximal requesting remote site",
+                columns="Maximal requesting identifier",
                 values="total_call_count",
-            ).head(head_number).plot(
+            ).head(15).plot(
                 kind="bar",
                 stacked=True,
                 ax=ax,
                 ylabel="Number of requests",
-                xlabel=("%s%ss" % (variant_container[0].upper(), variant_container[1:])),
+                xlabel=(
+                    "%s%ss" % (variant_container[0].upper(), variant_container[1:])
+                ),
             )
             # add percentage per most often requesting identifier
             rects = ax.patches
             for rect, label, height in zip(
                 rects,
-                [("%s%s" % (mp*100, "%")) for mp in max_percentage[:head_number]],
-                sorted(total_call_counts, reverse=True)[:head_number],
+                [("%s%s" % (mp * 100, "%")) for mp in max_percentage[:15]],
+                sorted(total_call_counts, reverse=True)[:15],
             ):
                 ax.text(
                     rect.get_x() + rect.get_width() / 2,
@@ -433,45 +520,165 @@ class Command(BaseCommand):
                 )
             ax.tick_params("x", labelrotation=360)
             ax.set_title(
-                "Number of requests per %s and percentage of top %ss"
-                % (variant_container, identifier)
+                "Number of requests per %s and percentage of top remote sites"
+                % variant_container
             )
             figures.append(fig)
-            file_names.append("requested_%ss_per_%s.pdf" % (variant_container, identifier.replace(" ", "_")))
+            file_names.append("requested_%ss_per_remote_site.pdf" % variant_container)
         else:
-            self.stdout.write(self.style.WARNING(
-                            "WARNING: No data available for plotting information about the %ss." % variant_container
-                        ))
+            self.stdout.write(
+                self.style.WARNING(
+                    "WARNING: No data available for plotting information about the %ss."
+                    % variant_container
+                )
+            )
+
+    def _plot_remote_site_user_per_variant_container(
+        self, data, fig, ax, variant_container, figures, file_names
+    ):
+        # read in data
+        remote_sites = []
+        variant_containers = []
+        users = []
+        for i in range(0, len(data[variant_container])):
+            for var_container in data[variant_container][i]:
+                variant_containers.append(var_container)
+                remote_sites.append(data["remote site"].loc[i])
+                users.append(data["remote site user"].loc[i])
+        case_project_data = pd.DataFrame(
+            {
+                "remote site": remote_sites,
+                variant_container: variant_containers,
+                "remote site user": users,
+            }
+        )
+        if variant_containers:
+            # count per identifier
+            table_count_remote_site = case_project_data.pivot_table(
+                index=variant_container, columns="remote site", aggfunc="size"
+            )
+            # get maximum count identifier and percentage
+            max_remote_site = [
+                table_count_remote_site.columns[
+                    np.argmax(
+                        table_count_remote_site[
+                            table_count_remote_site.index == c
+                        ].max()
+                    )
+                ]
+                for c in table_count_remote_site.index
+            ]
+            # get total counts
+            total_call_counts = case_project_data.pivot_table(
+                index=variant_container, aggfunc="size"
+            )
+            table_count_user = case_project_data.pivot_table(
+                index=[variant_container, "remote site"],
+                columns="remote site user",
+                aggfunc="size",
+            )
+            max_user = [
+                table_count_user.columns[
+                    table_count_user.loc[(case, remote_site)].argmax().max()
+                ]
+                for case, remote_site in zip(total_call_counts.index, max_remote_site)
+            ]
+            max_percentage = sorted(
+                [
+                    round(
+                        table_count_user.loc[(case, remote_site)].max()
+                        / table_count_user.loc[(case, remote_site)].sum(),
+                        2,
+                    )
+                    for case, remote_site in zip(
+                        total_call_counts.index, max_remote_site
+                    )
+                ],
+                reverse=True,
+            )
+            table = pd.DataFrame(
+                {
+                    "total_call_count": total_call_counts,
+                    "Maximal requesting user per remote site": max_user,
+                }
+            )
+            table.sort_values("total_call_count", ascending=False).pivot_table(
+                index=table.index,
+                columns="Maximal requesting user per remote site",
+                values="total_call_count",
+            ).head(15).plot(
+                kind="bar",
+                stacked=True,
+                ax=ax,
+                ylabel="Number of requests",
+                xlabel=(
+                    "%s%ss" % (variant_container[0].upper(), variant_container[1:])
+                ),
+            )
+            # add percentage per most often requesting identifier
+            rects = ax.patches
+            for rect, label, height in zip(
+                rects,
+                [("%s%s" % (mp * 100, "%")) for mp in max_percentage[:15]],
+                sorted(total_call_counts, reverse=True)[:15],
+            ):
+                ax.text(
+                    rect.get_x() + rect.get_width() / 2,
+                    height,
+                    label,
+                    ha="center",
+                    va="bottom",
+                )
+            ax.tick_params("x", labelrotation=360)
+            ax.set_title(
+                "Number of requests per %s and percentage of top users per remote site"
+                % variant_container
+            )
+            figures.append(fig)
+            file_names.append(
+                "requested_%ss_per_remote_site_users.pdf" % variant_container
+            )
+        else:
+            self.stdout.write(
+                self.style.WARNING(
+                    "WARNING: No data available for plotting information about the %ss."
+                    % variant_container
+                )
+            )
 
     def _plot_access_limit_per_authuser(self, data, fig, ax, figures, file_names):
         df_idx_authuser = data[data["status code"].isin([200, 403])].set_index(
             "remote site"
         )
         if df_idx_authuser.empty:
-            self.stdout.write(self.style.WARNING(
-                "WARNING: No data available for plotting information about the access limits per remote site."
-            ))
+            self.stdout.write(
+                self.style.WARNING(
+                    "WARNING: No data available for plotting information about the access limits per remote site."
+                )
+            )
         else:
-            df_idx_authuser.groupby(
-                [df_idx_authuser.index, "status code"]
-            ).size().unstack().plot(
+            df_idx_authuser.groupby([df_idx_authuser.index, "status code"]).size().head(
+                15
+            ).unstack().plot(
                 kind="bar",
                 ax=ax,
                 ylabel="Number of requests",
                 xlabel="Remote site, Access limit",
             )
-            ax.set_xticklabels(
-                [
-                    "%s, %s"
-                    % (
-                        label.get_text(),
-                        str(RemoteSite.objects.get(name=label.get_text()).access_limit),
-                    )
-                    for label in ax.get_xticklabels()
-                ]
-            )
+            xtick_labels = []
+            for label in ax.get_xticklabels():
+                label_text = label.get_text()
+                remote_site = RemoteSite.objects.filter(name=label_text).first()
+                if not remote_site:
+                    access_limit = None
+                else:
+                    access_limit = remote_site.access_limit
+                xtick_labels.append("%s, %s" % (label_text, access_limit))
+            ax.set_xticklabels(xtick_labels)
             ax.tick_params("x", labelrotation=360)
-            ax.set_title("Number of by access limit restricted requests per remote site")
+            ax.set_title(
+                "Number of by access limit restricted requests per remote site"
+            )
             figures.append(fig)
             file_names.append("Number_restricted_requests_remote_site.pdf")
 
@@ -486,9 +693,11 @@ class Command(BaseCommand):
             .sort_values("request number", ascending=False)
         )
         if df_table.empty:
-            self.stdout.write(self.style.WARNING(
-                "WARNING: No data available for plotting information about the top ten requested variants."
-            ))
+            self.stdout.write(
+                self.style.WARNING(
+                    "WARNING: No data available for plotting information about the top ten requested variants."
+                )
+            )
         else:
             table = pd.plotting.table(
                 ax=ax,

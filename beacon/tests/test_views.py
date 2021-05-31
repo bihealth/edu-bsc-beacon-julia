@@ -670,5 +670,6 @@ class TestCaseQueryEndpoint(TestCase):
             c._check_query_input(chromosome, start, end, reference, "H"), True
         )
         self.assertEqual(
-            c._check_query_input(chromosome, start, "1234", reference, alternative), True
+            c._check_query_input(chromosome, start, "1234", reference, alternative),
+            True,
         )
