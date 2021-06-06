@@ -136,4 +136,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
-NOSE_ARGS = ["--with-coverage", "--cover-package=beacon", "--cover-html"]
+NOSE_ARGS = ["--with-coverage", "--cover-package=beacon"]

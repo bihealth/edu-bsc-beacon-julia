@@ -56,6 +56,7 @@ class CaseQueryVariant:
         self.variant_count += self._get_counts(variant)
         if self.variant_count + self.internal_variant_count > 10:
             self.variant_count_greater_ten = True
+        # get coarse terms for phenotype
         for p in Phenotype.objects.filter(case=variant.case):
             self.coarse_phenotypes = self.coarse_phenotypes.union(
                 p.get_coarse_phenotype()
@@ -71,6 +72,7 @@ class CaseQueryVariant:
         self.variant_count += self._get_counts(variant)
         if self.variant_count + self.internal_variant_count > 10:
             self.variant_count_greater_ten = True
+        # get phenotype
         for p in Phenotype.objects.filter(case=variant.case):
             self.phenotypes = self.phenotypes.union({p.phenotype})
 
@@ -81,10 +83,12 @@ class CaseQueryVariant:
 
         :param variant: A variant object.
         """
+        # get case identifier
         self.case_indices.append(variant.case.index)
         self.variant_count += self._get_counts(variant)
         if self.variant_count + self.internal_variant_count > 10:
             self.variant_count_greater_ten = True
+        # get phenotype
         for p in Phenotype.objects.filter(case=variant.case):
             self.phenotypes = self.phenotypes.union({p.phenotype})
 

@@ -212,7 +212,7 @@ class LogEntry(models.Model):
     #: User identifier passed by X-Remote-Site header
     user_identifier = models.CharField(max_length=255, blank=True, null=True)
     #: User (=RemoteSite)
-    authuser = models.ForeignKey(
+    remote_site = models.ForeignKey(
         RemoteSite,
         null=True,
         on_delete=models.CASCADE,
@@ -221,7 +221,11 @@ class LogEntry(models.Model):
     #: Date and time of request
     date_time = models.DateTimeField()
     #: Request method
-    request = models.CharField(max_length=255)
+    method = models.CharField(max_length=255)
+    #: Requested endpoint
+    endpoint = models.CharField(max_length=255)
+    #: server protocol
+    server_protocol = models.CharField(max_length=255)
     #: Status code
     status_code = models.IntegerField()
     #: Size response object in bytes
@@ -230,6 +234,18 @@ class LogEntry(models.Model):
     cases = models.ManyToManyField(
         Case, blank=True, help_text="Case with request variant."
     )
+    #: Requested genome build
+    release = models.CharField(max_length=32, null=True)
+    #: Requested variant coordinates, the reference chromosome
+    chromosome = models.CharField(max_length=255, null=True)
+    #: Requested variant coordinates, the 0-based start position
+    start = models.IntegerField(null=True)
+    #: Requested variant coordinates, the end position
+    end = models.IntegerField(null=True)
+    #: Requested variant coordinates, the reference base
+    reference = models.CharField(max_length=512, null=True)
+    #: Requested variant coordinates, the alternate base
+    alternative = models.CharField(max_length=512, null=True)
 
 
 class MetadataBeacon(models.Model):

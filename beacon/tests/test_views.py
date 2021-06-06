@@ -76,9 +76,35 @@ class TestCaseInfoEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.ip_address, "127.0.0.1")
         self.assertEqual(log.user_identifier, None)
-        self.assertEqual(log.authuser, self.remote_site)
+        self.assertEqual(log.remote_site, self.remote_site)
         self.assertIsInstance(log.date_time, datetime.datetime)
-        self.assertEqual("GET;/;HTTP/1.1", log.request)
+        self.assertEqual("GET", log.method)
+        self.assertEqual("info", log.endpoint)
+        self.assertEqual(
+            None,
+            log.release,
+        )
+        self.assertEqual(
+            None,
+            log.chromosome,
+        )
+        self.assertEqual(
+            None,
+            log.start,
+        )
+        self.assertEqual(
+            None,
+            log.end,
+        )
+        self.assertEqual(
+            None,
+            log.reference,
+        )
+        self.assertEqual(
+            None,
+            log.alternative
+        )
+        self.assertEqual("HTTP/1.1", log.server_protocol)
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
@@ -132,18 +158,43 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.ip_address, "127.0.0.1")
         self.assertEqual(log.user_identifier, None)
-        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertIsInstance(log.date_time, datetime.datetime)
         self.assertEqual(
-            "GET;"
-            "/query;"
-            "[('referenceName', '1'),"
-            " ('start', '12344'),"
-            " ('end', '12345'),"
-            " ('referenceBases', 'C'),"
-            " ('alternateBases', 'T')];"
+            "GET",
+            log.method,
+        )
+        self.assertEqual(
+            "query",
+            log.endpoint,
+        )
+        self.assertEqual(
+            "GRCh37",
+            log.release,
+        )
+        self.assertEqual(
+            '1',
+            log.chromosome,
+        )
+        self.assertEqual(
+            12344,
+            log.start,
+        )
+        self.assertEqual(
+            12345,
+            log.end,
+        )
+        self.assertEqual(
+            'C',
+            log.reference,
+        )
+        self.assertEqual(
+            "T",
+            log.alternative
+        )
+        self.assertEqual(
             "HTTP/1.1",
-            log.request,
+            log.server_protocol,
         )
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
@@ -184,18 +235,11 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.ip_address, "127.0.0.1")
         self.assertEqual(log.user_identifier, None)
-        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertIsInstance(log.date_time, datetime.datetime)
         self.assertEqual(
-            "POST;"
-            "/query;"
-            "[('referenceName', '1'),"
-            " ('start', '12344'),"
-            " ('end', '12345'),"
-            " ('referenceBases', 'C'),"
-            " ('alternateBases', 'T')];"
-            "HTTP/1.1",
-            log.request,
+            "POST",
+            log.method,
         )
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
@@ -229,8 +273,40 @@ class TestCaseQueryEndpoint(TestCase):
             ).content,
         )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, self.remote_site_public)
-        self.assertEqual("GET;/query;[];HTTP/1.1", log.request)
+        self.assertEqual(log.remote_site, self.remote_site_public)
+        self.assertEqual("GET", log.method)
+        self.assertEqual(
+            "query",
+            log.endpoint,
+        )
+        self.assertEqual(
+            "GRCh37",
+            log.release,
+        )
+        self.assertEqual(
+            None,
+            log.chromosome,
+        )
+        self.assertEqual(
+            None,
+            log.start,
+        )
+        self.assertEqual(
+            None,
+            log.end,
+        )
+        self.assertEqual(
+            None,
+            log.reference,
+        )
+        self.assertEqual(
+            None,
+            log.alternative
+        )
+        self.assertEqual(
+            "HTTP/1.1",
+            log.server_protocol,
+        )
         self.assertEqual(log.status_code, 400)
 
     def test_get_query_invalid_input(self):
@@ -271,17 +347,10 @@ class TestCaseQueryEndpoint(TestCase):
             ).content,
         )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertEqual(
-            "GET;"
-            "/query;"
-            "[('reerenceName', '1'),"
-            " ('start', '12344'),"
-            " ('end', '12345'),"
-            " ('referenceBases', 'C'),"
-            " ('alternateBases', 'T')];"
-            "HTTP/1.1",
-            log.request,
+            None,
+            log.chromosome,
         )
         self.assertEqual(log.status_code, 400)
 
@@ -321,18 +390,10 @@ class TestCaseQueryEndpoint(TestCase):
             ).content,
         )
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertEqual(
-            "GET;"
-            "/query;"
-            "[('referenceName', '1'),"
-            " ('start', '12344'),"
-            " ('end', '12345'),"
-            " ('referenceBases', 'C'),"
-            " ('alternateBases', 'T'),"
-            " ('assemblyId', 'GRCh38')];"
-            "HTTP/1.1",
-            log.request,
+            'GRCh38',
+            log.release,
         )
         self.assertEqual(log.status_code, 200)
 
@@ -351,7 +412,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser.key, "xxx")
+        self.assertEqual(log.remote_site.key, "xxx")
         self.assertEqual(log.user_identifier, "user")
 
     def test_get_query_authorization_without_key_and_user_identifier(self):
@@ -368,7 +429,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.remote_site, self.remote_site_public)
         response = self.client.get(
             reverse("query"),
             {
@@ -381,7 +442,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         log = LogEntry.objects.all()[1]
-        self.assertEqual(log.authuser, self.remote_site_public)
+        self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertEqual(log.user_identifier, None)
 
     def test_get_query_authorization_invalid_key(self):
@@ -422,7 +483,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(response.status_code, 401)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, None)
+        self.assertEqual(log.remote_site, None)
         self.assertEqual(log.status_code, 401)
 
     def test_get_query_exceeded_access_limit(self):
@@ -464,7 +525,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(response.status_code, 403)
         log = LogEntry.objects.all()[0]
-        self.assertEqual(log.authuser, remote_site_zero_access)
+        self.assertEqual(log.remote_site, remote_site_zero_access)
         self.assertEqual(log.status_code, 403)
 
     def test_get_query_no_project_permission(self):
@@ -583,11 +644,11 @@ class TestCaseQueryEndpoint(TestCase):
             reference="C",
             alternative="T",
         )
-        PhenotypeFactory(case=c1)
-        PhenotypeFactory(case=c2)
+        p1 = PhenotypeFactory(case=c1)
+        p2 = PhenotypeFactory(case=c2)
         PhenotypeFactory(case=c3)
         PhenotypeFactory(case=c4)
-        PhenotypeFactory(case=c5)
+        p5 = PhenotypeFactory(case=c5)
         RemoteSiteFactory(key="x", consortia=[con1, con2, con3, con4, con5, con6, con7])
         self.assertEqual(Project.objects.count(), 6)
         self.assertEqual(Consortium.objects.count(), 7)
@@ -630,7 +691,7 @@ class TestCaseQueryEndpoint(TestCase):
                             "variantCount": 11,
                             "frequency": 0.39,
                             "coarsePhenotype": [],
-                            "phenotype": ["HP:0001039", "HP:0001049", "HP:0001166"],
+                            "phenotype": sorted([p1.phenotype, p2.phenotype, p5.phenotype]),
                             "caseName": [str(v1.case.index), str(v2.case.index)],
                             "error": None,
                         },

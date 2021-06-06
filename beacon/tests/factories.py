@@ -342,6 +342,7 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
 
 
 METHOD_MAPPING = {method: i + 1 for i, method in enumerate(["GET", "POST"])}
+np.random.seed(100)
 
 
 class LogEntryFactory(factory.django.DjangoModelFactory):
@@ -350,19 +351,15 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = LogEntry
 
-    class Params:
-        endpoint = "\query"
-        exist = True
-        chromosome = factory.Iterator(list(CHROMOSOME_MAPPING.keys()))
-        start = factory.Sequence(lambda n: (n + 1) * 100)
-        end = factory.LazyAttribute(
-            lambda o: o.start + len(o.reference) - len(o.alternative)
-        )
-        reference = factory.Iterator(["ACGT"])
-        alternative = factory.Iterator(["CGTA"])
-        method = factory.Iterator(list(METHOD_MAPPING.keys()))
-        remote_site = factory.SubFactory(RemoteSiteFactory)
-
+    release = "GRCh37"
+    chromosome = factory.Sequence(lambda n: list(CHROMOSOME_MAPPING.keys())[n % 25])
+    start = factory.Sequence(lambda n: (n + 1) * 100)
+    end = factory.LazyAttribute(
+        lambda o: o.start + len(o.reference) - len(o.alternative)
+    )
+    reference = factory.Sequence(lambda n: "ACGT"[n % 4])
+    alternative = factory.Sequence(lambda n: "CGTA"[n % 4])
+    remote_site = factory.Maybe(factory.LazyAttribute(lambda o: (o.status_code is 401) or (o.endpoint is "info")), None, factory.SubFactory(RemoteSiteFactory))
     ip_address = factory.Sequence(lambda n: "100.0.0.%d" % n)
     user_identifier = factory.Sequence(lambda n: "User_%d" % n)
     date_time = factory.fuzzy.FuzzyDateTime(
@@ -370,6 +367,9 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
         datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc),
     )
     response_size = 700
+    endpoint = factory.Sequence(lambda n: ["query", "info"][n % 2])
+    server_protocol = "HTTP/1.1"
+    method = factory.LazyAttributeSequence(lambda o, n: ["GET", "POST"][n % 2] if o.endpoint == "query" else "GET") # info, query
 
     @factory.lazy_attribute
     def status_code(self):
@@ -379,52 +379,6 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
             )
         else:
             return 200
-
-    @factory.lazy_attribute
-    def authuser(self):
-        if self.status_code is not 401:
-            return self.remote_site
-        else:
-            return None
-
-    @factory.lazy_attribute
-    def request(self):
-        if self.endpoint == "\query":
-            if (self.status_code is 200) and self.exist:
-                request = (
-                    "[('referenceName', %s),"
-                    " ('start', %d),"
-                    " ('end', %d),"
-                    " ('referenceBases', %s),"
-                    " ('alternateBases', %s)]"
-                    % (
-                        self.chromosome,
-                        self.start,
-                        self.end,
-                        self.reference,
-                        self.alternative,
-                    )
-                )
-            elif self.status_code is 400:
-                request = (
-                    "[('refereceName', %s),"
-                    " ('star', %s),"
-                    " ('ed', %s),"
-                    " ('referenceBase', %s),"
-                    " ('altenateBases', %s)]"
-                    % (
-                        self.chromosome,
-                        self.start,
-                        self.end,
-                        self.reference,
-                        self.alternative,
-                    )
-                )
-            else:
-                request = str([])
-            return "%s;/query;%s;HTTP/1.1" % (self.method, request)
-        else:
-            return "GET;/;HTTP/1.1"
 
     @factory.post_generation
     def cases(self, create, extracted, **kwargs):

@@ -21,6 +21,8 @@ from .json_structures import (
 )
 from .queries import CaseQueryVariant
 from datetime import datetime, date
+from django.utils import timezone
+import pytz
 
 
 class CaseInfoEndpoint(View):
@@ -40,6 +42,7 @@ class CaseInfoEndpoint(View):
         :param request: A django HttpRequest object.
         :return: JSONResponse
         """
+        # collect metadata from database
         metadata_beacon = MetadataBeacon.objects.all()
         datasets = MetadataBeaconDataset.objects.filter(
             metadata_beacon=metadata_beacon[0]
@@ -62,6 +65,7 @@ class CaseInfoEndpoint(View):
             organisations[0].name,
             organisations[0].contact_url,
         ).create_dict()
+        # create json output for info endpoint
         output = JsonResponse(
             InfoResponse(
                 metadata_beacon[0].beacon_id,
@@ -72,19 +76,15 @@ class CaseInfoEndpoint(View):
             ).create_dict(),
             json_dumps_params={"indent": 2},
         )
+        # log request
         LogEntry(
             ip_address=request.META.get("REMOTE_ADDR"),
             user_identifier=request.META.get("USER"),
-            authuser=RemoteSite.objects.get(name="public"),
-            date_time=datetime.now(),
-            request=(
-                "%s;%s;%s"
-                % (
-                    request.method,
-                    request.get_full_path(),
-                    request.META["SERVER_PROTOCOL"],
-                )
-            ),
+            remote_site=RemoteSite.objects.get(name="public"),
+            date_time=timezone.now(),
+            method=request.method,
+            endpoint="info",
+            server_protocol=request.META["SERVER_PROTOCOL"],
             status_code=output.status_code,
             response_size=len(output.content),
         ).save()
@@ -141,36 +141,43 @@ class CaseQueryEndpoint(View):
         """
         try:
             cases = [None]
+            # request parameters
             if release is None:
                 release = "GRCh37"
             allele_request = AlleleRequest(
                 chromosome, start, end, reference, alternative, release
             ).create_dict()
+            # get metadata
             beacon_id, api_version = self._query_metadata()
             output_json = QueryResponse(
                 beacon_id, api_version, allele_request
             ).create_dict()
+            # authentication with password
             if "Authorization" in request.headers:
                 key = request.headers["Authorization"]
             else:
                 key = "public"
             remote_site = self._authenticate(key)
+            # authentication failed
             if not list(remote_site):
                 output_json["error"] = Error(
                     401, "You are not authorized as a user."
                 ).create_dict()
                 remote_site = [None]
                 raise UnboundLocalError()
+            # check if input parameters are valid
             if self._check_query_input(chromosome, start, end, reference, alternative):
                 output_json["error"] = Error(
                     400, "The input format is invalid."
                 ).create_dict()
                 raise UnboundLocalError()
+            # check if access limit of remote site is exceeded
             if self._check_access_limit(remote_site[0]):
                 output_json["error"] = Error(
                     403, "You have exceeded your access limit."
                 ).create_dict()
                 raise UnboundLocalError()
+            # query database for variant request
             query_parameters, cases = self._query_variant(
                 remote_site[0].consortia,
                 chromosome,
@@ -180,6 +187,7 @@ class CaseQueryEndpoint(View):
                 alternative,
                 release,
             )
+            # define json output for query endpoint
             if query_parameters.exists is False:
                 output_json["exists"] = False
             else:
@@ -192,29 +200,25 @@ class CaseQueryEndpoint(View):
                 status=output_json["error"]["errorCode"],
                 json_dumps_params={"indent": 2},
             )
-        if request.method == "GET":
-            query_dict = request.GET.items()
-        else:
-            query_dict = request.POST.items()
+        # log request
         log_entry = LogEntry(
             ip_address=request.META.get("REMOTE_ADDR"),
             user_identifier=request.META.get("HTTP_X_REMOTE_USER"),
-            authuser=remote_site[0],
-            date_time=datetime.now(),
-            request=(
-                "%s;%s;%s;%s"
-                % (
-                    request.method,
-                    request.path,
-                    str(list(query_dict)),
-                    request.META["SERVER_PROTOCOL"],
-                )
-            ),
+            remote_site=remote_site[0],
+            date_time=timezone.now(),
+            method=request.method,
+            endpoint="query",
+            server_protocol=request.META["SERVER_PROTOCOL"],
+            release=release,
+            chromosome=chromosome,
+            start=start,
+            end=end,
+            reference=reference,
+            alternative=alternative,
             status_code=output.status_code,
             response_size=len(output.content),
         )
         log_entry.save()
-        #TODO check if assignement not better done
         log_entry.cases.set(cases)
         return output
 
@@ -271,7 +275,7 @@ class CaseQueryEndpoint(View):
         access_limit = remote_site.access_limit
         if (
             LogEntry.objects.filter(
-                authuser=remote_site, date_time__contains=date.today()
+                remote_site=remote_site, date_time__contains=date.today()
             ).count()
             >= access_limit
         ):
@@ -297,6 +301,7 @@ class CaseQueryEndpoint(View):
         """
         variant_query = CaseQueryVariant()
         start_1_based = int(start) + 1
+        # query database for requested variant
         variants = Variant.objects.filter(
             chromosome=chromosome,
             start=start_1_based,
@@ -307,6 +312,7 @@ class CaseQueryEndpoint(View):
             case__project__consortium__in=consortia.all(),
         ).distinct()
         cases = []
+        # for each variant get summary data according to visibility level
         for v in variants:
             variant_query.exists = True
             visibility_level = self._get_highest_vis_level(v.case.project, consortia)
@@ -323,6 +329,7 @@ class CaseQueryEndpoint(View):
             if visibility_level == 0:
                 variant_query.make_query_0(v)
             cases.append(v.case)
+        # calculate frequency
         if variant_query.exists is True:
             variant_query.frequency = (
                 variant_query.variant_count / variant_query.frequency_count

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 class Command(BaseCommand):
@@ -38,8 +39,8 @@ class Command(BaseCommand):
         Creates a statistical overview of the logged requests.
 
         :param args:
-        :param options: Flags for optionally create csv file, save plots in given directory
-        and define the to be observed time period
+        :param options: Flags for optionally create a csv file "--as_csv", save plots in given directory "--path path"
+        and define the to be observed time period "--time_period '2021-10-01' '2022-10-01'"
         :return: A stdout string if successful otherwise returns an error or warning.
         """
         log_data = self._create_data_frame()
@@ -79,7 +80,7 @@ class Command(BaseCommand):
         file_names = []
         fig1, ax1 = plt.subplots(1)
         fig2, ax2 = plt.subplots(1)
-        log_data_indexed.reset_index(level=0, inplace=True)
+        log_data_indexed.reset_index(inplace=True)
         self._plot_endpoint_per_time(
             log_data_indexed, fig1, ax1, month_day, figures, file_names
         )
@@ -92,8 +93,9 @@ class Command(BaseCommand):
         file_names.append("status_codes_requests.pdf")
         log_data_query = log_data.loc[log_data.endpoint == "query"]
         if not log_data_query.empty:
+            log_data_query.reset_index(inplace=True)
             fig3, ax3 = plt.subplots(1)
-            self._plot_requests_per_authuser(
+            self._plot_requests_per_remote_site(
                 log_data_query["remote site"], fig3, ax3, figures, file_names
             )
             figures.append(fig3)
@@ -135,7 +137,7 @@ class Command(BaseCommand):
                 file_names,
             )
             fig8, ax8 = plt.subplots(1)
-            self._plot_access_limit_per_authuser(
+            self._plot_access_limit_per_remote_site(
                 log_data_query, fig8, ax8, figures, file_names
             )
             fig9, ax9 = plt.subplots(1)
@@ -177,7 +179,7 @@ class Command(BaseCommand):
                     )
                 )
         else:
-            # plt.show()
+            plt.show()
             if options["as_csv"]:
                 try:
                     log_data.to_csv("log_entry_data.csv")
@@ -199,11 +201,15 @@ class Command(BaseCommand):
         )
 
     def _create_data_frame(self):
+        """
+
+        :return: a pandas DataFrame object containing the LogEntry data
+        """
         methods = []
         endpoints = []
         user_identifiers = []
         ip_addresses = []
-        authuser_names = []
+        remote_sites_names = []
         date_times = []
         status_codes = []
         response_sizes = []
@@ -213,48 +219,40 @@ class Command(BaseCommand):
         starts = []
         ends = []
         releases = []
+        server_protocols = []
         cases = []
         projects = []
         for l in LogEntry.objects.all():
             cases_query_set = l.cases.all()
             cases.append([c.name for c in cases_query_set])
             projects.append([c.project.title for c in cases_query_set])
-            (
-                method,
-                endpoint,
-                reference,
-                alternative,
-                chromosome,
-                start,
-                end,
-                release,
-            ) = self._read_in_request(l.request)
-            methods.append(method)
-            endpoints.append(endpoint)
+            methods.append(l.method)
+            endpoints.append(l.endpoint)
             ip_addresses.append(l.ip_address)
-            if l.authuser_id is None:
-                authuser_names.append("Unknown")
+            if l.remote_site is None:
+                remote_sites_names.append("Unknown")
             else:
-                authuser_names.append(RemoteSite.objects.get(id=l.authuser_id).name)
+                remote_sites_names.append(RemoteSite.objects.get(id=l.remote_site.id).name)
             user_identifiers.append(
-                "%s - %s" % (authuser_names[len(authuser_names) - 1], l.user_identifier)
+                "%s - %s" % (remote_sites_names[len(remote_sites_names) - 1], l.user_identifier)
             )
             date_times.append(l.date_time)
             status_codes.append(l.status_code)
             response_sizes.append(l.response_size)
-            references.append(reference)
-            alternatives.append(alternative)
-            chromosomes.append(chromosome)
-            starts.append(start)
-            ends.append(end)
-            releases.append(release)
+            references.append(l.reference)
+            alternatives.append(l.alternative)
+            chromosomes.append(l.chromosome)
+            starts.append(l.start)
+            ends.append(l.end)
+            releases.append(l.release)
+            server_protocols.append(l.server_protocol)
         return pd.DataFrame(
             data={
                 "method": methods,
                 "endpoint": endpoints,
                 "remote site user": user_identifiers,
                 "ip_address": ip_addresses,
-                "remote site": authuser_names,
+                "remote site": remote_sites_names,
                 # time zone removed
                 "date_time": [pd.to_datetime(d).tz_localize(None) for d in date_times],
                 # Just None for invalid input or info endpoint
@@ -266,81 +264,32 @@ class Command(BaseCommand):
                 "start": starts,
                 "end": ends,
                 "release": releases,
+                "server protocol": server_protocols,
                 "case": cases,
                 "project": projects,
             }
         )
 
-    def _read_in_request(self, request_field):
-        """
-        Reads the request string data containing the method, query string dictionary and the server protocol.
-
-        :param request_field: string of request of LogEntry object
-        :return: a string for the method, the endpoint, the reference base, the alternative base, the chromosome,
-        the start position, the end position, the release
-        """
-        request_info_list = request_field.split(";")
-        method = request_info_list[0]
-        endpoint = request_info_list[1]
-        if endpoint == "/query":
-            if str([]) == request_info_list[2]:
-                return method, "query", None, None, None, None, None, None
-            else:
-                query_list = request_info_list[2].split("(")
-                var_dict = {}
-                last = len(query_list)
-                for q in query_list[1 : last - 1]:
-                    k = q[: len(q) - 2].split(",")[0]
-                    v = q[: len(q) - 3].split(",")[1]
-                    var_dict[k[1 : len(k) - 1]] = v[2 : len(v) - 1]
-                k = query_list[last - 1][: len(query_list[last - 1]) - 2].split(",")[0]
-                v = query_list[last - 1][: len(query_list[last - 1]) - 3].split(",")[1]
-                var_dict[k[1 : len(k) - 1]] = v[2 : len(v)]
-                if "referenceBases" in var_dict.keys():
-                    reference = var_dict["referenceBases"]
-                else:
-                    reference = None
-                if "alternateBases" in var_dict.keys():
-                    alternative = var_dict["alternateBases"]
-                else:
-                    alternative = None
-                if "referenceName" in var_dict.keys():
-                    chromosome = var_dict["referenceName"]
-                else:
-                    chromosome = None
-                if "start" in var_dict.keys():
-                    start = int(var_dict["start"])
-                else:
-                    start = None
-                if "end" in var_dict.keys():
-                    end = int(var_dict["end"])
-                else:
-                    end = None
-                if "assemblyId" in var_dict.keys():
-                    release = var_dict["assemblyId"]
-                else:
-                    release = "GRCh37"
-                return (
-                    method,
-                    "query",
-                    reference,
-                    alternative,
-                    chromosome,
-                    start,
-                    end,
-                    release,
-                )
-        else:
-            return method, "info", None, None, None, None, None, None
-
     def _plot_endpoint_per_time(self, data, fig, ax, month_day, figures, file_names):
+        """
+        Creates a plot containing information about the number of request per endpoint and
+        per time scaled per month or per year depending on the month_day input. Appends
+        the created plot to the figures and its name to file names.
+
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param month_day: bool True if the data contains just data for one month
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
         endpoints_df = pd.DataFrame(data={})
         for endpoint in data["endpoint"].unique():
             endpoints_df[endpoint] = [int(d) for d in data["endpoint"] == endpoint]
         endpoints_df["date_time"] = data["date_time"]
         endpoints_df = endpoints_df.set_index("date_time")
         if month_day:
-            endpoints_df.groupby([endpoints_df.index]).sum().unstack().plot(
+            endpoints_df.groupby([endpoints_df.index.year, endpoints_df.index.month, endpoints_df.index.day]).sum().plot(
                 kind="line",
                 style=".-",
                 ax=ax,
@@ -350,7 +299,7 @@ class Command(BaseCommand):
         else:
             endpoints_df.groupby(
                 [endpoints_df.index.year, endpoints_df.index.month]
-            ).size().unstack().plot(
+            ).sum().plot(
                 kind="line",
                 style=".-",
                 ax=ax,
@@ -365,13 +314,25 @@ class Command(BaseCommand):
     def _plot_status_codes_per_time(
         self, data, fig, ax, month_day, figures, file_names
     ):
+        """
+        Creates a plot containing information about the number of request having a certain status
+        code per time scaled per month or per year depending on the month_day input. Appends
+        the created plot to the figures and its name to file names.
+
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param month_day: bool True if the data contains just data for one month
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
         status_codes_df = pd.DataFrame(data={})
         for status in data["status code"].unique():
             status_codes_df[status] = [int(d) for d in data["status code"] == status]
         status_codes_df["date_time"] = data["date_time"]
         status_codes_df = status_codes_df.set_index("date_time")
         if month_day:
-            status_codes_df.groupby([status_codes_df.index]).sum().plot(
+            status_codes_df.groupby([status_codes_df.index.year, status_codes_df.index.month, status_codes_df.index.day]).sum().plot(
                 kind="line",
                 style=".-",
                 ax=ax,
@@ -393,36 +354,17 @@ class Command(BaseCommand):
         figures.append(fig)
         file_names.append("status_codes_requests.pdf")
 
-    """ def _plot_status_codes_per_time(
-            self, data, fig, ax, month_day, figures, file_names
-    ):
-        if month_day:
-            data.groupby(
-                [data.index.year, data.index.month, data.index.day, "status code"]
-            ).size().unstack().plot(
-                kind="line",
-                style=".-",
-                ax=ax,
-                ylabel="Number of requests",
-                xlabel="Time period (year, month, day)",
-            )
-        else:
-            data.groupby(
-                [data.index.year, data.index.month, "status code"]
-            ).size().unstack().plot(
-                kind="line",
-                style=".-",
-                ax=ax,
-                ylabel="Number of requests",
-                xlabel="Time period (year, month)",
-            )
-        ax.tick_params("x", labelrotation=360)
-        ax.set_title("Number of status codes from requests")
-        figures.append(fig)
-        file_names.append("status_codes_requests.pdf")
-    """
+    def _plot_requests_per_remote_site(self, data, fig, ax, figures, file_names):
+        """
+        Creates a plot containing information about the number of request per remote site.
+        Appends the created plot to the figures and its name to file names.
 
-    def _plot_requests_per_authuser(self, data, fig, ax, figures, file_names):
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
         data.value_counts().head(15).plot(
             kind="bar", ax=ax, ylabel="Number of requests", xlabel="Remote site"
         )
@@ -434,6 +376,20 @@ class Command(BaseCommand):
     def _plot_remote_site_per_variant_container(
         self, data, fig, ax, variant_container, figures, file_names
     ):
+        """
+        Creates a plot containing information about the number of request
+        per variant container (either case or project), mayor requesting
+        remote site of each variant container and the proportion of it on
+        the number of request in percentage. Appends the created plot to
+        the figures and its name to file names.
+
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param variant_container: string
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
         # read in data
         remote_sites = []
         variant_containers = []
@@ -536,6 +492,21 @@ class Command(BaseCommand):
     def _plot_remote_site_user_per_variant_container(
         self, data, fig, ax, variant_container, figures, file_names
     ):
+        """
+        Creates a plot containing information about the number of request
+        per variant container (either case or project), mayor requesting
+        remote site and its mayor requesting user of each variant container
+        and the users proportion per remote site of the number of request in
+        percentage. Appends the created plot to the figures and its name to
+        file names.
+
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param variant_container: string
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
         # read in data
         remote_sites = []
         variant_containers = []
@@ -646,18 +617,29 @@ class Command(BaseCommand):
                 )
             )
 
-    def _plot_access_limit_per_authuser(self, data, fig, ax, figures, file_names):
-        df_idx_authuser = data[data["status code"].isin([200, 403])].set_index(
+    def _plot_access_limit_per_remote_site(self, data, fig, ax, figures, file_names):
+        """
+        Creates a plot containing information about the number of request per remote site
+        comparing status codes indicating how often a remote site tries to exceed its
+        access limits. Appends the created plot to the figures and its name to file names.
+
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
+        df_idx_remote_sites = data[data["status code"].isin([200, 403])].set_index(
             "remote site"
         )
-        if df_idx_authuser.empty:
+        if df_idx_remote_sites.empty:
             self.stdout.write(
                 self.style.WARNING(
                     "WARNING: No data available for plotting information about the access limits per remote site."
                 )
             )
         else:
-            df_idx_authuser.groupby([df_idx_authuser.index, "status code"]).size().head(
+            df_idx_remote_sites.groupby([df_idx_remote_sites.index, "status code"]).size().head(
                 15
             ).unstack().plot(
                 kind="bar",
@@ -683,6 +665,16 @@ class Command(BaseCommand):
             file_names.append("Number_restricted_requests_remote_site.pdf")
 
     def _plot_table_top_requested_variants(self, data, fig, ax, figures, file_names):
+        """
+        Creates a plot containing a table with the top ten requested variants.
+        Appends the created plot to the figures and its name to file names.
+
+        :param data: pandas DataFrame object
+        :param fig: matplotlib figure object
+        :param ax: matplotlib ax
+        :param figures: list of matplotlib figures objects
+        :param file_names: list of strings
+        """
         data["request number"] = np.zeros(data.shape[0], np.int8)
         df_table = (
             data.groupby(
