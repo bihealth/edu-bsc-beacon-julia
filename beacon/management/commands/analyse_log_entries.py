@@ -43,12 +43,10 @@ class Command(BaseCommand):
         and define the to be observed time period "--time_period '2021-10-01' '2022-10-01'"
         :return: A stdout string if successful otherwise returns an error or warning.
         """
-        log_data = self._create_data_frame()
-        log_data_indexed = log_data.set_index("date_time")
         if options["time_period"]:
             try:
-                time_start = pd.to_datetime(options["time_period"][0])
-                time_end = pd.to_datetime(options["time_period"][1])
+                time_start = pd.to_datetime(options["time_period"][0], utc=True)
+                time_end = pd.to_datetime(options["time_period"][1], utc=True)
                 if (
                     (time_start > time_end)
                     or pd.isnull(time_start)
@@ -61,17 +59,16 @@ class Command(BaseCommand):
                         "ERROR: Your input format of the date_time is invalid."
                     )
                 )
-            if log_data_indexed.empty is False:
-                mask = (log_data_indexed.index > time_start) & (
-                    log_data_indexed.index <= time_end
-                )
-                log_data_indexed = log_data_indexed.loc[mask]
-        if log_data_indexed.empty:
+            log_data = self._create_data_frame(True, time_start, time_end)
+        else:
+            log_data = self._create_data_frame()
+        if log_data.empty:
             return self.stdout.write(
                 self.style.WARNING(
                     "WARNING: No data available for the given time period."
                 )
             )
+        log_data_indexed = log_data.set_index("date_time")
         plt.style.use("seaborn-bright")
         month_day = False
         if log_data_indexed.index.year.nunique() is 1:
@@ -92,7 +89,13 @@ class Command(BaseCommand):
         figures.append(fig2)
         file_names.append("status_codes_requests.pdf")
         log_data_query = log_data.loc[log_data.endpoint == "query"]
-        if not log_data_query.empty:
+        if log_data_query.empty:
+            self.stdout.write(
+                self.style.WARNING(
+                    "WARNING: No data available for plotting information about query endpoint."
+                )
+            )
+        else:
             log_data_query.reset_index(inplace=True)
             fig3, ax3 = plt.subplots(1)
             self._plot_requests_per_remote_site(
@@ -157,12 +160,6 @@ class Command(BaseCommand):
                 figures,
                 file_names,
             )
-        else:
-            self.stdout.write(
-                self.style.WARNING(
-                    "WARNING: No data available for plotting information about query endpoint."
-                )
-            )
         if options["path"]:
             path = options["path"]
             try:
@@ -200,9 +197,14 @@ class Command(BaseCommand):
             )
         )
 
-    def _create_data_frame(self):
+    def _create_data_frame(self, time_period=False, time_start=None, time_end=None):
         """
+        Creates a pandas DataFrame object by querying the database for the the LogEntry entries
+        and filters entries optionally for a given time period.
 
+        :param time_period: bool indicating if time period is given
+        :param time_start: a pandas datetime object
+        :param time_end: a pandas datetime object
         :return: a pandas DataFrame object containing the LogEntry data
         """
         methods = []
@@ -222,30 +224,34 @@ class Command(BaseCommand):
         server_protocols = []
         cases = []
         projects = []
-        for l in LogEntry.objects.all():
-            cases_query_set = l.cases.all()
+        if time_period:
+            log_entries = LogEntry.objects.filter(date_time__gte=time_start, date_time__lte=time_end)
+        else:
+            log_entries = LogEntry.objects.all()
+        for log in log_entries:
+            cases_query_set = log.cases.all()
             cases.append([c.name for c in cases_query_set])
             projects.append([c.project.title for c in cases_query_set])
-            methods.append(l.method)
-            endpoints.append(l.endpoint)
-            ip_addresses.append(l.ip_address)
-            if l.remote_site is None:
+            methods.append(log.method)
+            endpoints.append(log.endpoint)
+            ip_addresses.append(log.ip_address)
+            if log.remote_site is None:
                 remote_sites_names.append("Unknown")
             else:
-                remote_sites_names.append(RemoteSite.objects.get(id=l.remote_site.id).name)
+                remote_sites_names.append(RemoteSite.objects.get(id=log.remote_site.id).name)
             user_identifiers.append(
-                "%s - %s" % (remote_sites_names[len(remote_sites_names) - 1], l.user_identifier)
+                "%s - %s" % (remote_sites_names[len(remote_sites_names) - 1], log.user_identifier)
             )
-            date_times.append(l.date_time)
-            status_codes.append(l.status_code)
-            response_sizes.append(l.response_size)
-            references.append(l.reference)
-            alternatives.append(l.alternative)
-            chromosomes.append(l.chromosome)
-            starts.append(l.start)
-            ends.append(l.end)
-            releases.append(l.release)
-            server_protocols.append(l.server_protocol)
+            date_times.append(log.date_time)
+            status_codes.append(log.status_code)
+            response_sizes.append(log.response_size)
+            references.append(log.reference)
+            alternatives.append(log.alternative)
+            chromosomes.append(log.chromosome)
+            starts.append(log.start)
+            ends.append(log.end)
+            releases.append(log.release)
+            server_protocols.append(log.server_protocol)
         return pd.DataFrame(
             data={
                 "method": methods,
