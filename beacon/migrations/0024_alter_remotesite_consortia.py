@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0023_alter_variant_chromosome'),
+        ("beacon", "0023_alter_variant_chromosome"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='remotesite',
-            name='consortia',
-            field=models.ManyToManyField(blank=True, help_text='Consortium to which this object belongs.', to='beacon.Consortium'),
+            model_name="remotesite",
+            name="consortia",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Consortium to which this object belongs.",
+                to="beacon.Consortium",
+            ),
         ),
     ]

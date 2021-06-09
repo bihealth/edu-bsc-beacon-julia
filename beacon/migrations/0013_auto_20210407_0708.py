@@ -7,48 +7,86 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0012_auto_20210406_1013'),
+        ("beacon", "0012_auto_20210406_1013"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='case',
-            name='project',
-            field=models.ForeignKey(help_text='Project to which this object belongs.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.project'),
+            model_name="case",
+            name="project",
+            field=models.ForeignKey(
+                help_text="Project to which this object belongs.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.project",
+            ),
         ),
         migrations.AlterField(
-            model_name='consortium',
-            name='projects',
-            field=models.ManyToManyField(help_text='Project to which this object belongs.', null=True, to='beacon.Project'),
+            model_name="consortium",
+            name="projects",
+            field=models.ManyToManyField(
+                help_text="Project to which this object belongs.",
+                null=True,
+                to="beacon.Project",
+            ),
         ),
         migrations.AlterField(
-            model_name='logentry',
-            name='authuser',
-            field=models.ForeignKey(help_text='Remote side to which the client belongs to.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.remoteside'),
+            model_name="logentry",
+            name="authuser",
+            field=models.ForeignKey(
+                help_text="Remote side to which the client belongs to.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.remoteside",
+            ),
         ),
         migrations.AlterField(
-            model_name='metadatabeacondataset',
-            name='beacon_id',
-            field=models.ForeignKey(help_text='Beacon which this dataset contains.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.metadatabeacon'),
+            model_name="metadatabeacondataset",
+            name="beacon_id",
+            field=models.ForeignKey(
+                help_text="Beacon which this dataset contains.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.metadatabeacon",
+            ),
         ),
         migrations.AlterField(
-            model_name='metadatabeaconorganization',
-            name='beacon_id',
-            field=models.ForeignKey(help_text='Beacon which this organization hosts.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.metadatabeacon'),
+            model_name="metadatabeaconorganization",
+            name="beacon_id",
+            field=models.ForeignKey(
+                help_text="Beacon which this organization hosts.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.metadatabeacon",
+            ),
         ),
         migrations.AlterField(
-            model_name='phenotype',
-            name='case',
-            field=models.ForeignKey(help_text='Case to which this phenotype belongs.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.case'),
+            model_name="phenotype",
+            name="case",
+            field=models.ForeignKey(
+                help_text="Case to which this phenotype belongs.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.case",
+            ),
         ),
         migrations.AlterField(
-            model_name='remoteside',
-            name='consortium',
-            field=models.ManyToManyField(help_text='Consortium to which this object belongs.', null=True, to='beacon.Consortium'),
+            model_name="remoteside",
+            name="consortium",
+            field=models.ManyToManyField(
+                help_text="Consortium to which this object belongs.",
+                null=True,
+                to="beacon.Consortium",
+            ),
         ),
         migrations.AlterField(
-            model_name='variant',
-            name='case',
-            field=models.ForeignKey(help_text='Case to which this variant belongs.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.case'),
+            model_name="variant",
+            name="case",
+            field=models.ForeignKey(
+                help_text="Case to which this variant belongs.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.case",
+            ),
         ),
     ]

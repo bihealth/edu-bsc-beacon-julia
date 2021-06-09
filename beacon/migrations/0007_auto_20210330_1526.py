@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0006_remoteside'),
+        ("beacon", "0006_remoteside"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='logentry',
-            old_name='frank',
-            new_name='authuser',
+            model_name="logentry",
+            old_name="frank",
+            new_name="authuser",
         ),
         migrations.AddIndex(
-            model_name='phenotype',
-            index=models.Index(fields=['case'], name='beacon_phen_case_id_532bab_idx'),
+            model_name="phenotype",
+            index=models.Index(fields=["case"], name="beacon_phen_case_id_532bab_idx"),
         ),
     ]

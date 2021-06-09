@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0013_auto_20210407_0708'),
+        ("beacon", "0013_auto_20210407_0708"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='consortium',
-            name='projects',
-            field=models.ManyToManyField(blank=True, help_text='Project to which this object belongs.', to='beacon.Project'),
+            model_name="consortium",
+            name="projects",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Project to which this object belongs.",
+                to="beacon.Project",
+            ),
         ),
         migrations.AlterField(
-            model_name='remoteside',
-            name='consortium',
-            field=models.ManyToManyField(blank=True, help_text='Consortium to which this object belongs.', to='beacon.Consortium'),
+            model_name="remoteside",
+            name="consortium",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Consortium to which this object belongs.",
+                to="beacon.Consortium",
+            ),
         ),
     ]

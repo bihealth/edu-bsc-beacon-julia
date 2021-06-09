@@ -7,26 +7,45 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0001_initial'),
+        ("beacon", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MetadataBeaconOrganization',
+            name="MetadataBeaconOrganization",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('beacon_org_id', models.CharField(max_length=255)),
-                ('name', models.CharField(max_length=255)),
-                ('contact_url', models.CharField(max_length=255)),
-                ('beacon_id', models.ForeignKey(help_text='Beacon which this organization hosts.', on_delete=django.db.models.deletion.CASCADE, to='beacon.metadatabeacon')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("beacon_org_id", models.CharField(max_length=255)),
+                ("name", models.CharField(max_length=255)),
+                ("contact_url", models.CharField(max_length=255)),
+                (
+                    "beacon_id",
+                    models.ForeignKey(
+                        help_text="Beacon which this organization hosts.",
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="beacon.metadatabeacon",
+                    ),
+                ),
             ],
         ),
         migrations.AlterField(
-            model_name='metadatabeacondataset',
-            name='beacon_id',
-            field=models.ForeignKey(help_text='Beacon which this dataset contains.', on_delete=django.db.models.deletion.CASCADE, to='beacon.metadatabeacon'),
+            model_name="metadatabeacondataset",
+            name="beacon_id",
+            field=models.ForeignKey(
+                help_text="Beacon which this dataset contains.",
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.metadatabeacon",
+            ),
         ),
         migrations.DeleteModel(
-            name='MetadataBeaconOrganisation',
+            name="MetadataBeaconOrganisation",
         ),
     ]

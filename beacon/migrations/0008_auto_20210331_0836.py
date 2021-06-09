@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0007_auto_20210330_1526'),
+        ("beacon", "0007_auto_20210330_1526"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='consortium',
-            name='access_limit',
+            model_name="consortium",
+            name="access_limit",
         ),
         migrations.RemoveField(
-            model_name='consortium',
-            name='key',
+            model_name="consortium",
+            name="key",
         ),
         migrations.RemoveField(
-            model_name='remoteside',
-            name='visibility_level',
+            model_name="remoteside",
+            name="visibility_level",
         ),
     ]

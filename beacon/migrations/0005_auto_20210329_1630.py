@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0004_logentry'),
+        ("beacon", "0004_logentry"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='phenotype',
-            old_name='case_id',
-            new_name='case',
+            model_name="phenotype",
+            old_name="case_id",
+            new_name="case",
         ),
         migrations.RenameField(
-            model_name='variant',
-            old_name='case_id',
-            new_name='case',
+            model_name="variant",
+            old_name="case_id",
+            new_name="case",
         ),
         migrations.AlterField(
-            model_name='case',
-            name='index',
+            model_name="case",
+            name="index",
             field=models.CharField(max_length=255),
         ),
     ]

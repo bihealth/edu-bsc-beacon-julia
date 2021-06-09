@@ -4,26 +4,31 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-class Migration(migrations.Migration):	
+class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('beacon', '0017_auto_20210414_0823'),
+        ("beacon", "0017_auto_20210414_0823"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='RemoteSide',
-            new_name='RemoteSite',
+            old_name="RemoteSide",
+            new_name="RemoteSite",
         ),
         migrations.RenameField(
-            model_name='remotesite',
-            old_name='consortium',
-            new_name='consortia',
+            model_name="remotesite",
+            old_name="consortium",
+            new_name="consortia",
         ),
         migrations.AlterField(
-            model_name='logentry',
-            name='authuser',
-            field=models.ForeignKey(help_text='Remote site to which the client belongs to.', null=True, on_delete=django.db.models.deletion.CASCADE, to='beacon.remotesite'),
+            model_name="logentry",
+            name="authuser",
+            field=models.ForeignKey(
+                help_text="Remote site to which the client belongs to.",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="beacon.remotesite",
+            ),
         ),
     ]

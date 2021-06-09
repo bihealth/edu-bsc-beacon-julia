@@ -6,16 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0002_auto_20210324_0839'),
+        ("beacon", "0002_auto_20210324_0839"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='consortium',
-            name='projects',
-            field=models.ManyToManyField(help_text='Project to which this object belongs.', to='beacon.Project'),
+            model_name="consortium",
+            name="projects",
+            field=models.ManyToManyField(
+                help_text="Project to which this object belongs.", to="beacon.Project"
+            ),
         ),
         migrations.DeleteModel(
-            name='ProjectConsortium',
+            name="ProjectConsortium",
         ),
     ]

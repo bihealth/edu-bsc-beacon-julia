@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0015_auto_20210412_1412'),
+        ("beacon", "0015_auto_20210412_1412"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='metadatabeacondataset',
-            old_name='beacon_metadata',
-            new_name='metadata_beacon',
+            model_name="metadatabeacondataset",
+            old_name="beacon_metadata",
+            new_name="metadata_beacon",
         ),
         migrations.RenameField(
-            model_name='metadatabeaconorganization',
-            old_name='beacon_metadata',
-            new_name='metadata_beacon',
+            model_name="metadatabeaconorganization",
+            old_name="beacon_metadata",
+            new_name="metadata_beacon",
         ),
     ]

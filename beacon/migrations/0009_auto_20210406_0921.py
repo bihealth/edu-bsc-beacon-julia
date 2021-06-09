@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0008_auto_20210331_0836'),
+        ("beacon", "0008_auto_20210331_0836"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='consortium',
-            name='visibility_level',
+            model_name="consortium",
+            name="visibility_level",
             field=models.IntegerField(),
         ),
     ]

@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('beacon', '0021_alter_consortium_visibility_level'),
+        ("beacon", "0021_alter_consortium_visibility_level"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='consortium',
-            name='projects',
-            field=models.ManyToManyField(blank=True, help_text='Project to which this object belongs.', to='beacon.Project'),
+            model_name="consortium",
+            name="projects",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Project to which this object belongs.",
+                to="beacon.Project",
+            ),
         ),
     ]
