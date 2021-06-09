@@ -2,7 +2,7 @@ import datetime
 from io import StringIO
 import tempfile
 import matplotlib.pyplot as plt
-from pandas import DataFrame, to_datetime
+from pandas import DataFrame, to_datetime, Timestamp
 from ipaddress import ip_address
 from .factories import (
     RemoteSiteFactory,
@@ -21,10 +21,12 @@ from beacon.management.commands.analyse_log_entries import Command
 from os import path
 from unittest import mock
 from django.test import Client
-from django.utils import timezone
 
 
 class TestAnalyseLogEntriesMethods(TestCase):
+    """Test case for testing the methods of 'analyse_log_entry' command."""
+
+    #: Data used for methods
     def setUp(self):
         self.data = DataFrame(
             data={
@@ -33,7 +35,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
                 "remote site user": ["remote_site_1 - user_1"],
                 "ip_address": [ip_address("127.0.0.1")],
                 "remote site": ["remote_site_1"],
-                "date_time": [to_datetime(d).tz_localize(None) for d in ["2021-05-19"]],
+                "date_time": [to_datetime("2021-05-19").tz_localize(None)],
                 "status code": [200],
                 "response_size": [730],
                 "reference": ["T"],
@@ -47,6 +49,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
             }
         )
 
+    #: Test method _create_data_frame
     def test_create_data_frame(self):
         log_entry_no_remote_side = LogEntryFactory(remote_site=None)
         out = Command()._create_data_frame()
@@ -54,10 +57,18 @@ class TestAnalyseLogEntriesMethods(TestCase):
             data={
                 "method": [log_entry_no_remote_side.method],
                 "endpoint": [log_entry_no_remote_side.endpoint],
-                "remote site user": ["Unknown - %s" % log_entry_no_remote_side.user_identifier],
+                "remote site user": [
+                    "Unknown - %s" % log_entry_no_remote_side.user_identifier
+                ],
                 "ip_address": [log_entry_no_remote_side.ip_address],
                 "remote site": ["Unknown"],
-                "date_time": [to_datetime(log_entry_no_remote_side.date_time).tz_localize(None)],
+                "date_time": [
+                    Timestamp(
+                        to_datetime(log_entry_no_remote_side.date_time).tz_localize(
+                            None
+                        )
+                    )
+                ],
                 "status code": [log_entry_no_remote_side.status_code],
                 "response_size": [700],
                 "reference": [log_entry_no_remote_side.reference],
@@ -71,20 +82,36 @@ class TestAnalyseLogEntriesMethods(TestCase):
                 "project": [[]],
             }
         )
+        # compares output pandas DataFrame to created DataFrame
         equal = out.equals(df)
         self.assertEqual(equal, True)
 
+    #: Test method _create_data_frame with filter option for time period
     def test_create_data_frame_date_time(self):
-        log_entry_no_remote_side = LogEntryFactory(remote_site=None, date_time=to_datetime("2021-06-01", utc=True))
-        out = Command()._create_data_frame(True, to_datetime("2021-06-01", utc=True), to_datetime("2021-06-01", utc=True))
+        log_entry_no_remote_side = LogEntryFactory(
+            remote_site=None, date_time=to_datetime("2021-06-01", utc=True)
+        )
+        out = Command()._create_data_frame(
+            True,
+            to_datetime("2021-06-01", utc=True),
+            to_datetime("2021-06-01", utc=True),
+        )
         df = DataFrame(
             data={
                 "method": [log_entry_no_remote_side.method],
                 "endpoint": [log_entry_no_remote_side.endpoint],
-                "remote site user": ["Unknown - %s" % log_entry_no_remote_side.user_identifier],
+                "remote site user": [
+                    "Unknown - %s" % log_entry_no_remote_side.user_identifier
+                ],
                 "ip_address": [log_entry_no_remote_side.ip_address],
                 "remote site": ["Unknown"],
-                "date_time": [to_datetime(log_entry_no_remote_side.date_time).tz_localize(None)],
+                "date_time": [
+                    Timestamp(
+                        to_datetime(log_entry_no_remote_side.date_time).tz_localize(
+                            None
+                        )
+                    )
+                ],
                 "status code": [log_entry_no_remote_side.status_code],
                 "response_size": [700],
                 "reference": [log_entry_no_remote_side.reference],
@@ -98,27 +125,32 @@ class TestAnalyseLogEntriesMethods(TestCase):
                 "project": [[]],
             }
         )
+        # compares output pandas DataFrame to created DataFrame
         equal = out.equals(df)
         self.assertEqual(equal, True)
 
+    #: Test method _plot_endpoint_per_time
     def test_plot_endpoint_per_time(self):
         fig, ax = plt.subplots(1)
         figures = []
         file_names = []
         Command()._plot_endpoint_per_time(
-            self.data, fig, ax, False, figures, file_names
+            self.data, fig, ax, figures, file_names
         )
         self.assertEqual(ax.title.get_text(), "Number of requests per endpoint")
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["requests_per_endpoint.pdf"])
 
+    #: Test method _plot_endpoint_per_time with option of higher
+    #: granularity per date time
     def test_plot_endpoint_per_time_month_day(self):
         fig, ax = plt.subplots(1)
         figures = []
         file_names = []
-        Command()._plot_endpoint_per_time(self.data, fig, ax, True, figures, file_names)
+        Command()._plot_endpoint_per_time(self.data, fig, ax, figures, file_names, True)
         self.assertEqual(ax.title.get_text(), "Number of requests per endpoint")
 
+    #: Test method _plot_request_per_time
     def test_plot_request_per_remote_site(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -134,6 +166,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["requests_per_remote_site.pdf"])
 
+    #: Test method _plot_remote_site_per_variant_container with case
     def test_plot_remote_site_per_variant_container(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -153,6 +186,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["requested_cases_per_remote_site.pdf"])
 
+    #: Test method _plot_remote_site_per_variant_container with case and empty dataframe
     def test_plot_remote_site_per_variant_container_empty(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -173,6 +207,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [])
         self.assertEqual(file_names, [])
 
+    #: Test method _plot_remote_site__user_per_variant_container with case
     def test_plot_remote_site_user_per_variant_container(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -194,6 +229,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["requested_cases_per_remote_site_users.pdf"])
 
+    #: Test method _plot_remote_site_per_variant_container with case and empty dataframe
     def test_plot_remote_site_user_per_variant_container_empty(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -216,6 +252,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [])
         self.assertEqual(file_names, [])
 
+    #: Test method _plot_remote_access_limit_per_remote_site
     def test_plot_access_limit_per_remote_site(self):
         RemoteSiteFactory(name="remote_site_1")
         fig, ax = plt.subplots(1)
@@ -231,6 +268,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["Number_restricted_requests_remote_site.pdf"])
 
+    #: Test method _plot_remote_access_limit_per_remote_site with empty dataframe
     def test_plot_access_limit_per_remote_site_empty(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -245,6 +283,8 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [])
         self.assertEqual(file_names, [])
 
+    #: Test method _plot_remote_access_limit_per_remote_site with no existing access limit
+    #: because of unknown remote site
     def test_plot_access_limit_per_remote_site_none(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -260,6 +300,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["Number_restricted_requests_remote_site.pdf"])
 
+    #: Test method _plot_table_top_requested_variants
     def test_plot_table_top_requested_variants(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -277,6 +318,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["top_10_variants.pdf"])
 
+    #: Test method _plot_table_top_requested_variants with empty dataframe
     def test_plot_table_top_requested_variants_empty(self):
         fig, ax = plt.subplots(1)
         figures = []
@@ -297,23 +339,26 @@ class TestAnalyseLogEntriesMethods(TestCase):
         self.assertEqual(figures, [])
         self.assertEqual(file_names, [])
 
+    #: Test method _plot_status_codes_per_time
     def test_plot_status_codes_per_time(self):
         fig, ax = plt.subplots(1)
         figures = []
         file_names = []
         Command()._plot_status_codes_per_time(
-            self.data, fig, ax, False, figures, file_names
+            self.data, fig, ax, figures, file_names
         )
         self.assertEqual(ax.title.get_text(), "Number of status codes from requests")
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["status_codes_requests.pdf"])
 
+    #: Test method _plot_status_codes_per_time with a higher date time granularity,
+    #: counts per day
     def test_plot_status_codes_per_time_month_day(self):
         fig, ax = plt.subplots(1)
         figures = []
         file_names = []
         Command()._plot_status_codes_per_time(
-            self.data, fig, ax, True, figures, file_names
+            self.data, fig, ax, figures, file_names, True
         )
         self.assertEqual(ax.title.get_text(), "Number of status codes from requests")
         self.assertEqual(figures, [fig])
@@ -321,6 +366,9 @@ class TestAnalyseLogEntriesMethods(TestCase):
 
 
 class TestAnalyseLogEntries(TestCase):
+    """Test Case for calling customized admin command 'analyse_log_entries'"""
+
+    #: Sets up a temporary directory, a test client, and the needed metadata for a request
     def setUp(self):
         self.test_dir = tempfile.TemporaryDirectory()
         self.client = Client()
@@ -338,6 +386,7 @@ class TestAnalyseLogEntries(TestCase):
         )
         self.case = CaseFactory(project=self.project)
 
+    #: Help function for calling the command
     def call_command(self, *args, **kwargs):
         out = StringIO()
         call_command(
@@ -349,35 +398,50 @@ class TestAnalyseLogEntries(TestCase):
         )
         return out.getvalue()
 
+    #: Test if database is empty
     def test_handle_empty_db(self):
         out = self.call_command()
         self.assertEqual(out, "WARNING: No data available for the given time period.\n")
 
-    @mock.patch('beacon.management.commands.analyse_log_entries.plt.show')
+    #: Test if no data is available after filtered for given time period
+    @mock.patch("beacon.management.commands.analyse_log_entries.plt.show")
     def test_handle_time_period_month_day_no_query_data(self, mock_show):
-        LogEntryFactory(date_time=datetime.datetime(2021, 10, 1, tzinfo=datetime.timezone.utc), endpoint="info")
+        LogEntryFactory(
+            date_time=datetime.datetime(2021, 10, 1, tzinfo=datetime.timezone.utc),
+            endpoint="info",
+        )
         out = self.call_command(["--time_period", "2021-05-20", "2022-05-20"])
         self.assertEqual(
             out,
-            "WARNING: No data available for plotting information about query endpoint.\nA statistical overview of the logged requests was created successfully.\n",
+            "WARNING: No data available for plotting information about query endpoint.\n"
+            "A statistical overview of the logged requests was created successfully.\n",
         )
 
+    #: Test if time period input is invalid
     def test_handle_time_period_invalid(self):
         out = self.call_command(["--time_period", "g", "2021-05-20"])
         self.assertEqual(out, "ERROR: Your input format of the date_time is invalid.\n")
 
-    @mock.patch('beacon.management.commands.analyse_log_entries.plt.show')
-    @mock.patch('pandas.DataFrame.to_csv')
+    #: Test if no path given for saving csv file
+    @mock.patch("beacon.management.commands.analyse_log_entries.plt.show")
+    @mock.patch("pandas.DataFrame.to_csv")
     def test_handle_no_path_csv(self, mock_csv, mock_show):
         p1 = ProjectFactory()
         c1 = CaseFactory(project=p1)
-        LogEntryFactory(endpoint="query", remote_site=self.remote_site, cases=[c1.id])
+        LogEntryFactory(
+            endpoint="query",
+            remote_site=self.remote_site,
+            status_code=200,
+            cases=[c1.id],
+        )
         out = self.call_command(["--as_csv"])
         self.assertEqual(
             out,
-            "WARNING: The log_entry_data.csv file was saved in the current working directory.\nA statistical overview of the logged requests was created successfully.\n",
+            "WARNING: The log_entry_data.csv file was saved in the current working directory.\n"
+            "A statistical overview of the logged requests was created successfully.\n",
         )
 
+    #: Test if path is given for saving csv files and plots
     def test_filled_path_csv(self):
         LogEntryFactory(remote_site=self.remote_site, cases=[self.case.id])
         LogEntryFactory(remote_site=self.remote_site, cases=[self.case.id])
@@ -387,11 +451,15 @@ class TestAnalyseLogEntries(TestCase):
             file_exist_csv = path.isfile("log_entry_data.csv")
             file_exist_request_endpoints = path.isfile("requests_per_endpoint.pdf")
             file_exist_request_remote_site = path.isfile("requests_per_remote_site.pdf")
-            file_exist_case_remote_site = path.isfile("requested_cases_per_remote_site.pdf")
+            file_exist_case_remote_site = path.isfile(
+                "requested_cases_per_remote_site.pdf"
+            )
             file_exist_project_remote_site = path.isfile(
                 "requested_projects_per_remote_site.pdf"
             )
-            file_exist_case_user = path.isfile("requested_cases_per_remote_site_users.pdf")
+            file_exist_case_user = path.isfile(
+                "requested_cases_per_remote_site_users.pdf"
+            )
             file_exist_project_user = path.isfile(
                 "requested_projects_per_remote_site_users.pdf"
             )
@@ -415,15 +483,16 @@ class TestAnalyseLogEntries(TestCase):
                 out,
             )
 
-    @mock.patch('beacon.management.commands.analyse_log_entries.plt.show')
-    @mock.patch('pandas.DataFrame.to_csv')
+    #: Test thrown error saving csv file
+    @mock.patch("beacon.management.commands.analyse_log_entries.plt.show")
+    @mock.patch("pandas.DataFrame.to_csv")
     def test_filled_csv_error(self, mock_to_csv, mock_show):
         file_exist = path.isfile("log_entry_data.csv")
         self.assertEqual(file_exist, False)
         p1 = ProjectFactory()
         c1 = CaseFactory(project=p1)
         LogEntryFactory(remote_site=self.remote_site, cases=[c1.id])
-        mock_to_csv.side_effect = OSError('Some error was thrown')
+        mock_to_csv.side_effect = OSError("Some error was thrown")
         out = self.call_command("--as_csv")
         file_exist = path.isfile("log_entry_data.csv")
         self.assertEqual(file_exist, False)
@@ -431,22 +500,27 @@ class TestAnalyseLogEntries(TestCase):
             out, "ERROR: You have no writing permission for the current directory.\n"
         )
 
-    @mock.patch('beacon.management.commands.analyse_log_entries.os.chdir')
+    #: Test thrown error saving csv file for given path
+    @mock.patch("beacon.management.commands.analyse_log_entries.os.chdir")
     def test_filled_path_csv_error(self, mock_chdir):
         p1 = ProjectFactory()
         c1 = CaseFactory(project=p1)
         LogEntryFactory(remote_site=self.remote_site, cases=[c1.id])
-        mock_chdir.side_effect = OSError('Some error was thrown')
+        mock_chdir.side_effect = OSError("Some error was thrown")
         with self.test_dir:
             out = self.call_command(["--path", self.test_dir.name, "--as_csv"])
             file_exist_csv = path.isfile("log_entry_data.csv")
             file_exist_request_endpoints = path.isfile("requests_per_endpoint.pdf")
             file_exist_request_remote_site = path.isfile("requests_per_remote_site.pdf")
-            file_exist_case_remote_site = path.isfile("requested_cases_per_remote_site.pdf")
+            file_exist_case_remote_site = path.isfile(
+                "requested_cases_per_remote_site.pdf"
+            )
             file_exist_project_remote_site = path.isfile(
                 "requested_projects_per_remote_site.pdf"
             )
-            file_exist_case_user = path.isfile("requested_cases_per_remote_site_user.pdf")
+            file_exist_case_user = path.isfile(
+                "requested_cases_per_remote_site_user.pdf"
+            )
             file_exist_project_user = path.isfile(
                 "requested_projects_per_remote_site_user.pdf"
             )

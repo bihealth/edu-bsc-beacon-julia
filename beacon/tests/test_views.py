@@ -27,9 +27,11 @@ from django.test import Client
 
 
 class TestCaseInfoEndpoint(TestCase):
+    """Test case for info endpoint"""
+
+    #: Set up a test client and the metadata needed for a request
     def setUp(self):
         self.client = Client()
-        # TODO: MetadataEndpointFactory()
         self.metadata_beacon = MetadataBeaconFactory()
         self.metadata_organization = MetadataBeaconOrganizationFactory(
             metadata_beacon=self.metadata_beacon
@@ -39,6 +41,7 @@ class TestCaseInfoEndpoint(TestCase):
         )
         self.remote_site = RemoteSiteFactory(name="public")
 
+    #: Test for GET request
     def test_get_info(self):
         self.assertEqual(LogEntry.objects.count(), 0)
         response = self.client.get(reverse("info"))
@@ -100,16 +103,16 @@ class TestCaseInfoEndpoint(TestCase):
             None,
             log.reference,
         )
-        self.assertEqual(
-            None,
-            log.alternative
-        )
+        self.assertEqual(None, log.alternative)
         self.assertEqual("HTTP/1.1", log.server_protocol)
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
 
 class TestCaseQueryEndpoint(TestCase):
+    """Test case for query endpoint"""
+
+    #: Set up test client, required metadata and public consortium
     def setUp(self):
         self.client = Client()
         self.metadata_beacon = MetadataBeaconFactory()
@@ -122,6 +125,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.remote_site_public = RemoteSiteFactory(name="public", key="public")
         self.remote_site_xxx = RemoteSiteFactory(key="xxx")
 
+    #: Test GET method for query endpoint
     def test_get_query(self):
         response = self.client.get(
             reverse("query"),
@@ -173,7 +177,7 @@ class TestCaseQueryEndpoint(TestCase):
             log.release,
         )
         self.assertEqual(
-            '1',
+            "1",
             log.chromosome,
         )
         self.assertEqual(
@@ -185,13 +189,10 @@ class TestCaseQueryEndpoint(TestCase):
             log.end,
         )
         self.assertEqual(
-            'C',
+            "C",
             log.reference,
         )
-        self.assertEqual(
-            "T",
-            log.alternative
-        )
+        self.assertEqual("T", log.alternative)
         self.assertEqual(
             "HTTP/1.1",
             log.server_protocol,
@@ -199,6 +200,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
+    #: Test POST method for query endpoint
     def test_post_query(self):
         response = self.client.post(
             reverse("query"),
@@ -244,6 +246,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.status_code, 200)
         self.assertIsInstance(log.response_size, int)
 
+    #: Test for case of no input query parameters
     def test_get_query_no_input(self):
         self.assertEqual(LogEntry.objects.count(), 0)
         response = self.client.get(reverse("query"))
@@ -299,16 +302,14 @@ class TestCaseQueryEndpoint(TestCase):
             None,
             log.reference,
         )
-        self.assertEqual(
-            None,
-            log.alternative
-        )
+        self.assertEqual(None, log.alternative)
         self.assertEqual(
             "HTTP/1.1",
             log.server_protocol,
         )
         self.assertEqual(log.status_code, 400)
 
+    #: Test case for invalid query input
     def test_get_query_invalid_input(self):
         self.assertEqual(LogEntry.objects.count(), 0)
         response = self.client.get(
@@ -354,6 +355,7 @@ class TestCaseQueryEndpoint(TestCase):
         )
         self.assertEqual(log.status_code, 400)
 
+    #: Test for input parameter 'assemblyId' is given
     def test_get_query_with_assemblyId(self):
         self.assertEqual(LogEntry.objects.count(), 0)
         response = self.client.get(
@@ -392,11 +394,12 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertEqual(
-            'GRCh38',
+            "GRCh38",
             log.release,
         )
         self.assertEqual(log.status_code, 200)
 
+    #: Test case for non-public access
     def test_get_query_authorization_with_key_and_user_identifier(self):
         response = self.client.get(
             reverse("query"),
@@ -415,6 +418,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.remote_site.key, "xxx")
         self.assertEqual(log.user_identifier, "user")
 
+    #: Test request for public access
     def test_get_query_authorization_without_key_and_user_identifier(self):
         response = self.client.get(
             reverse("query"),
@@ -445,6 +449,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.remote_site, self.remote_site_public)
         self.assertEqual(log.user_identifier, None)
 
+    #: Test get authorization fails
     def test_get_query_authorization_invalid_key(self):
         response = self.client.get(
             reverse("query"),
@@ -486,6 +491,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.remote_site, None)
         self.assertEqual(log.status_code, 401)
 
+    #: Test case access limit exceeded
     def test_get_query_exceeded_access_limit(self):
         remote_site_zero_access = RemoteSiteFactory(key="0_access", access_limit=0)
         response = self.client.get(
@@ -528,6 +534,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(log.remote_site, remote_site_zero_access)
         self.assertEqual(log.status_code, 403)
 
+    #: Test case no permission for any project given
     def test_get_query_no_project_permission(self):
         p = ProjectFactory()
         con = ConsortiumFactory(projects=None)
@@ -576,6 +583,7 @@ class TestCaseQueryEndpoint(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(LogEntry.objects.count(), 1)
 
+    #: Test case mixed access rights of consortia with different visibility levels
     def test_get_query_mixed_vis_level(self):
         p1 = ProjectFactory()
         p2 = ProjectFactory()
@@ -691,7 +699,9 @@ class TestCaseQueryEndpoint(TestCase):
                             "variantCount": 11,
                             "frequency": 0.39,
                             "coarsePhenotype": [],
-                            "phenotype": sorted([p1.phenotype, p2.phenotype, p5.phenotype]),
+                            "phenotype": sorted(
+                                [p1.phenotype, p2.phenotype, p5.phenotype]
+                            ),
                             "caseName": [str(v1.case.index), str(v2.case.index)],
                             "error": None,
                         },
@@ -704,6 +714,7 @@ class TestCaseQueryEndpoint(TestCase):
         log = LogEntry.objects.all()[0]
         self.assertEqual(log.cases.all()[::1], [c1, c2, c3, c4, c5, c6])
 
+    #: Test for method _check_query_input
     def test_query_check_query_input(self):
         c = CaseQueryEndpoint()
         chromosome = "X"

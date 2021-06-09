@@ -20,9 +20,8 @@ from .json_structures import (
     QueryResponse,
 )
 from .queries import CaseQueryVariant
-from datetime import datetime, date
+from datetime import date
 from django.utils import timezone
-import pytz
 
 
 class CaseInfoEndpoint(View):
@@ -49,6 +48,7 @@ class CaseInfoEndpoint(View):
         )
         datasets_dict_list = []
         for d in datasets:
+            # create json response scheme for dataset
             datasets_dict = DatasetResponse(
                 d.beacon_data_id,
                 d.name,
@@ -60,12 +60,13 @@ class CaseInfoEndpoint(View):
         organisations = MetadataBeaconOrganization.objects.filter(
             metadata_beacon=metadata_beacon[0]
         )
+        # create json response scheme for organization
         dict_org = OrganizationResponse(
             organisations[0].beacon_org_id,
             organisations[0].name,
             organisations[0].contact_url,
         ).create_dict()
-        # create json output for info endpoint
+        # create json output scheme for info endpoint
         output = JsonResponse(
             InfoResponse(
                 metadata_beacon[0].beacon_id,
@@ -140,8 +141,9 @@ class CaseQueryEndpoint(View):
         :return: JSONResponse
         """
         try:
+            # set requested cases to None
             cases = [None]
-            # request parameters
+            # 'collect' request parameters
             if release is None:
                 release = "GRCh37"
             allele_request = AlleleRequest(
@@ -300,6 +302,7 @@ class CaseQueryEndpoint(View):
         :return: AlleleResponseObject
         """
         variant_query = CaseQueryVariant()
+        # convert 0-based variant position to 1-based
         start_1_based = int(start) + 1
         # query database for requested variant
         variants = Variant.objects.filter(

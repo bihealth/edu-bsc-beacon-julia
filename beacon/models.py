@@ -151,9 +151,12 @@ class Phenotype(models.Model):
 
         :return: Set of phenotype terms
         """
+        # get already created graph for HPO (Human Phenotype Ontology)
+        # intersect with ancestor nodes from phenotype
         coarse_phenotypes = networkx.algorithms.ancestors(
             HPO_GRAPH, self.phenotype
         ).intersection(HPO_COARSE_TERMS)
+        # if phenotype is already a coarse term
         if coarse_phenotypes == set():
             return {self.phenotype}
         else:

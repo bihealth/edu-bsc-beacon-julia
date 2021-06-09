@@ -25,6 +25,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Project
 
+    #: The title of the project
     title = factory.Sequence(lambda n: "Project %d" % n)
 
 
@@ -44,13 +45,16 @@ class CaseFactory(factory.django.DjangoModelFactory):
         #: affected.
         inheritance = "denovo"
 
+    #: The project to which the case belongs
     project = factory.SubFactory(ProjectFactory)
+    #: The name of the case
     name = factory.LazyAttributeSequence(
         lambda o, n: "case %03d: %s" % (n, o.structure)
     )
+    #: The index of the case
     index = factory.Sequence(lambda n: "index_%03d-N1-DNA1-WES1" % n)
-    pedigree = []
 
+    #: The pedigree of the case
     @factory.lazy_attribute_sequence
     def pedigree(self, n):
         if self.structure not in (
@@ -253,16 +257,24 @@ class VariantFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Variant
 
+    #: The reference genome of the variant
     release = "GRCh37"
+    #: The chromosome of the variant
     chromosome = factory.Iterator(list(CHROMOSOME_MAPPING.keys()))
+    #: The start position of the variant, 1-based
     start = factory.Sequence(lambda n: (n + 1) * 100)
+    #: The end position of the variant, 1-based
     end = factory.LazyAttribute(
         lambda o: o.start + len(o.reference) - len(o.alternative)
     )
+    #: The reference base of the variant
     reference = factory.Iterator("ACGT")
+    #: The alternate base of the variant
     alternative = factory.Iterator("CGTA")
+    #: The case to which the variant belongs to
     case = factory.SubFactory(CaseFactory)
 
+    #: The genotype of the variant
     @factory.lazy_attribute
     def genotype(self):
         """Generate genotype JSON field from already set ``self.case``."""
@@ -284,7 +296,9 @@ class PhenotypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Phenotype
 
+    #: The case to which the phenotype belongs to
     case = factory.SubFactory(CaseFactory)
+    #: HPO (Human Phenotype Ontology) term
     phenotype = factory.Iterator(PHENOTYPES)
 
 
@@ -297,9 +311,12 @@ class ConsortiumFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Consortium
 
+    #: The name of the consortium
     name = factory.Sequence(lambda n: "Consortium %d" % n)
+    #: The visibility level of the consortium with the following options: 0, 5, 10, 15, 20, 25
     visibility_level = factory.Iterator(list(VISIBILITY_LEVEL_MAPPING.keys()))
 
+    #: The projects to which the consortium has access to
     @factory.post_generation
     def projects(self, create, extracted, **kwargs):
         if not create:
@@ -318,7 +335,9 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = RemoteSite
 
+    #: The name of the remote site
     name = factory.Sequence(lambda n: "Remote Site %d" % n)
+    #: The key used for authentication
     key = factory.Sequence(
         lambda n: "".join(
             random.choices(
@@ -327,14 +346,15 @@ class RemoteSiteFactory(factory.django.DjangoModelFactory):
         )
         + "%d" % n
     )
+    #: The daily access limit how often a beacon can get queried from remote site
     access_limit = factory.Sequence(lambda n: (n + 1) * 10)
 
+    #: The consortia to which the remote site belongs to
     @factory.post_generation
     def consortia(self, create, extracted, **kwargs):
         if not create:
             # Simple build, do nothing.
             return
-
         if extracted:
             # A list of groups were passed in, use them
             for consortium in extracted:
@@ -351,42 +371,70 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = LogEntry
 
+    #: The release passed by the beacon query request
     release = "GRCh37"
+    #: The chromosome passed by the beacon query request
     chromosome = factory.Sequence(lambda n: list(CHROMOSOME_MAPPING.keys())[n % 25])
+    #: The start position passed by the beacon query request, 1-based
     start = factory.Sequence(lambda n: (n + 1) * 100)
+    #: The end position passed by the beacon query request, 1-based
     end = factory.LazyAttribute(
         lambda o: o.start + len(o.reference) - len(o.alternative)
     )
+    #: The reference base passed by the beacon query request
     reference = factory.Sequence(lambda n: "ACGT"[n % 4])
+    #: The alternate base passed by the beacon query request
     alternative = factory.Sequence(lambda n: "CGTA"[n % 4])
-    remote_site = factory.Maybe(factory.LazyAttribute(lambda o: (o.status_code is 401) or (o.endpoint is "info")), None, factory.SubFactory(RemoteSiteFactory))
+    #: The requesting remote site
+    #: None in case of info endpoint and failed authentication
+    remote_site = factory.Maybe(
+        factory.LazyAttribute(
+            lambda o: (o.status_code == 401) or (o.endpoint == "info")
+        ),
+        None,
+        factory.SubFactory(RemoteSiteFactory),
+    )
+    #: The ip address of the requester
     ip_address = factory.Sequence(lambda n: "100.0.0.%d" % n)
+    #: The user name of the requester
     user_identifier = factory.Sequence(lambda n: "User_%d" % n)
+    #: The time and date when requested
     date_time = factory.fuzzy.FuzzyDateTime(
         datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc),
         datetime.datetime(2023, 1, 1, tzinfo=datetime.timezone.utc),
     )
+    #: The response size of the response
     response_size = 700
+    #: The requested endpoint
     endpoint = factory.Sequence(lambda n: ["query", "info"][n % 2])
+    #: The used server protocol
     server_protocol = "HTTP/1.1"
-    method = factory.LazyAttributeSequence(lambda o, n: ["GET", "POST"][n % 2] if o.endpoint == "query" else "GET") # info, query
+    #: The used REST method
+    method = factory.LazyAttributeSequence(
+        lambda o, n: ["GET", "POST"][n % 2] if o.endpoint == "query" else "GET"
+    )
 
+    #: The status code of the response
     @factory.lazy_attribute
     def status_code(self):
-        if self.endpoint is "\query":
+        if self.endpoint == "query":
             return np.random.choice(
                 [200, 403, 400, 401], p=[0.8, 0.15, 0.025, 0.025], size=1
-            )
+            )[0]
         else:
             return 200
 
+    #: The cases which were queried by request
     @factory.post_generation
     def cases(self, create, extracted, **kwargs):
-        if not create:
+        if (self.endpoint == "info") or (self.status_code != 200):
             return
-        if extracted:
-            for case in extracted:
-                self.cases.add(case)
+        else:
+            if not create:
+                return
+            if extracted:
+                for case in extracted:
+                    self.cases.add(case)
 
 
 class MetadataBeaconFactory(factory.django.DjangoModelFactory):

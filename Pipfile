@@ -15,6 +15,7 @@ matplotlib = "*"
 black = "*"
 flake8 = "*"
 seaborn = "*"
+numpy = "*"
 
 [dev-packages]
 
