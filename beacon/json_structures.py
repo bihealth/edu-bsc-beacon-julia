@@ -1,3 +1,8 @@
+import attr
+import typing
+from .models import Variant, Case
+
+
 class QueryResponse:
     """
     The QueryResponseObject defined by the beacon protocol.
@@ -66,52 +71,6 @@ class AlleleRequest:
         )
 
 
-class AlleleResponse:
-    """
-    An extended AlleleResponseObject defined by the beacon protocol.
-    """
-
-    def __init__(
-        self,
-        exists,
-        sample_count,
-        variant_count_greater_ten,
-        variant_count,
-        frequency,
-        coarse_phenotype,
-        phenotype,
-        case_indices,
-    ):
-        self.exists = exists
-        self.sample_count = sample_count
-        self.variant_count_greater_ten = variant_count_greater_ten
-        self.variant_count = variant_count
-        self.frequency = frequency
-        self.coarse_phenotype = sorted(list(coarse_phenotype))
-        self.phenotype = sorted(list(phenotype))
-        self.case_indices = sorted(case_indices)
-        self.error = None
-
-    def create_dict(self):
-        """
-        Creates a dictionary for the JSONResponse.
-
-        :return: dict of AlleleResponseObject
-        """
-        allele_response_dict = {
-            "exists": self.exists,
-            "sampleCount": self.sample_count,
-            "variantCount>10": self.variant_count_greater_ten,
-            "variantCount": self.variant_count,
-            "frequency": self.frequency,
-            "coarsePhenotype": self.coarse_phenotype,
-            "phenotype": self.phenotype,
-            "caseName": self.case_indices,
-            "error": self.error,
-        }
-        return allele_response_dict
-
-
 class Error:
     """
     The ErrorObject defined by the beacon protocol.
@@ -128,6 +87,51 @@ class Error:
         :return: dict of ErrorObject
         """
         return dict(errorCode=self.error_code, errorMessage=self.error_message)
+
+
+@attr.s
+class AlleleResponse(object):
+    """
+    An extended AlleleResponseObject defined by the beacon protocol.
+    """
+    exists: bool = False
+    sample_count: int = 0
+    variant_count_greater_ten: bool = False
+    variant_count: int = 0
+    frequency: float = 0
+    coarse_phenotype: set = set()
+    phenotype: set = set()
+    case_indices: list = []
+    error: typing.Optional[Error] = None
+
+    def create_dict(self):
+        """
+        Creates a dictionary for the JSONResponse.
+
+        :return: dict of AlleleResponseObject
+        """
+        allele_response_dict = {
+            "exists": self.exists,
+            "sampleCount": self.sample_count,
+            "variantCount>10": self.variant_count_greater_ten,
+            "variantCount": self.variant_count,
+            "frequency": self.frequency,
+            "coarsePhenotype": sorted(list(self.coarse_phenotype)),
+            "phenotype": sorted(list(self.phenotype)),
+            "caseName": sorted(self.case_indices),
+            "error": self.error,
+        }
+        return allele_response_dict
+
+
+@attr.s
+class AlleleResponseAccumulation(AlleleResponse):
+    """
+    A Case for getting and collecting the variant data depending on the visibility level defined by a consortium.
+    """
+    internal_variant_count: int = 0
+    frequency_count: int = 0
+    variant: Variant = Variant()
 
 
 class InfoResponse:

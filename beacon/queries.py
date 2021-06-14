@@ -1,109 +1,157 @@
 from .models import Phenotype
+from .json_structures import AlleleResponseAccumulation
+from abc import ABC, abstractmethod
 
 
-class CaseQueryVariant:
+class VariantAccumulator(ABC):
     """
-    A Case for getting and collecting the variant data depending on the visibility level defined by a consortium.
+    The accumulator class declares the factory method accumulate_variant.
+    The accumulator's subclasses provide the implementation of this method.
     """
 
-    def __init__(self):
-        self.exists = False
-        self.sample_count = 0
-        self.variant_count_greater_ten = False
-        self.variant_count = 0
-        self.internal_variant_count = 0
-        self.frequency = 0
-        self.frequency_count = 0
-        self.coarse_phenotypes = set()
-        self.phenotypes = set()
-        self.case_indices = []
-
-    def make_query_25(self, variant):
+    @abstractmethod
+    def accumulate_variant(self, allele_response):
         """
-        Queries the variant object for visibility level 25 (=public).
+        Abstract method for the accumulation the information about the
+        AlleleResponseAccumulation object variant.
 
-        :param variant: A variant object.
+        :param allele_response: A AlleleResponseAccumulation object.
         """
-        counts = self._get_counts(variant)
+        pass
 
-    def make_query_20(self, variant):
+    def accumulate(self, allele_response):
         """
-        Queries the variant object for visibility level 20 which changes the variantCount>10.
+        Call method for the accumulation factory method to accumulate information
+        about the AlleleResponseAccumulation object variant.
 
-        :param variant: A variant object.
+        :param allele_response: A AlleleResponseAccumulation object.
         """
-        self.internal_variant_count += self._get_counts(variant)
-        if self.variant_count + self.internal_variant_count > 10:
-            self.variant_count_greater_ten = True
+        self.accumulate_variant(allele_response)
 
-    def make_query_15(self, variant):
-        """
-        Queries the variant object for visibility level 15 which changes the variantCount>10 and the variantCount.
 
-        :param variant: A variant object.
-        """
-        self.variant_count += self._get_counts(variant)
-        if self.variant_count + self.internal_variant_count > 10:
-            self.variant_count_greater_ten = True
+class VariantAccumulator25(VariantAccumulator):
+    """
+    Accumulator class for visibility level 25: accumulates information about existence,
+    frequency count and sample count.
+    """
 
-    def make_query_10(self, variant):
+    def accumulate_variant(self, allele_response):
         """
-        Queries the variant object for visibility level 10 which changes the variantCount>10, the variantCount
-        and the coarsePhenotype.
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 25 (=public).
 
-        :param variant: A variant object.
+        :param allele_response: A AlleleResponseAccumulation object.
         """
-        self.variant_count += self._get_counts(variant)
-        if self.variant_count + self.internal_variant_count > 10:
-            self.variant_count_greater_ten = True
-        # get coarse terms for phenotype
-        for p in Phenotype.objects.filter(case=variant.case):
-            self.coarse_phenotypes = self.coarse_phenotypes.union(
+        super(VariantAccumulator25, self).accumulate_variant(allele_response)
+        allele_response.exists = True
+        counts = allele_response.variant.get_variant_sample_frequency_count()
+        allele_response.sample_count += counts[1]
+        allele_response.frequency_count += counts[2]
+
+
+class VariantAccumulator20Internal(VariantAccumulator25):
+    """
+    Accumulator class for visibility level 20: accumulates information about existence,
+    frequency count, sample count and variantCount>10.
+    """
+
+    def accumulate_variant(self, allele_response):
+        """
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 20 which changes the variantCount>10.
+
+        :param allele_response: A AlleleResponseAccumulation object.
+        """
+        super(VariantAccumulator20Internal, self).accumulate_variant(allele_response)
+        if allele_response.variant_count + allele_response.internal_variant_count > 10:
+            allele_response.variant_count_greater_ten = True
+
+
+class VariantAccumulator20(VariantAccumulator20Internal):
+    """
+    Accumulator class for visibility level 20: accumulates information about existence,
+    frequency count, sample count, internal variant count and variantCount>10.
+    """
+
+    def accumulate_variant(self, allele_response):
+        """
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 20 which changes the internal variant count.
+
+        :param allele_response: A AlleleResponseAccumulation object.
+        """
+        allele_response.internal_variant_count += allele_response.variant.get_variant_sample_frequency_count()[0]
+        super(VariantAccumulator20, self).accumulate_variant(allele_response)
+
+
+class VariantAccumulator15(VariantAccumulator20Internal):
+    """
+    Accumulator class for visibility level 15: accumulates information about existence,
+    frequency count, sample count, allele count and variantCount>10.
+    """
+
+    def accumulate_variant(self, allele_response):
+        """
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 15 which changes the variant count.
+
+        :param allele_response: A AlleleResponseAccumulation object.
+        """
+        allele_response.variant_count += allele_response.variant.get_variant_sample_frequency_count()[0]
+        super(VariantAccumulator15, self).accumulate_variant(allele_response)
+
+
+class VariantAccumulator10(VariantAccumulator15):
+    """
+    Accumulator class for visibility level 10: accumulates information about existence,
+    frequency count, sample count, variantCount>10, allele count and coarse phenotype.
+    """
+
+    def accumulate_variant(self, allele_response):
+        """
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 10 which changes the coarse phenotype.
+
+        :param allele_response: A AlleleResponseAccumulation object.
+        """
+        super(VariantAccumulator10, self).accumulate_variant(allele_response)
+        for p in Phenotype.objects.filter(case=allele_response.variant.case):
+            allele_response.coarse_phenotype = allele_response.coarse_phenotype.union(
                 p.get_coarse_phenotype()
             )
 
-    def make_query_5(self, variant):
-        """
-        Queries the variant object for visibility level 10 which changes the variantCount>10, the variantCount
-        and the phenotype.
 
-        :param variant: A variant object.
-        """
-        self.variant_count += self._get_counts(variant)
-        if self.variant_count + self.internal_variant_count > 10:
-            self.variant_count_greater_ten = True
-        # get phenotype
-        for p in Phenotype.objects.filter(case=variant.case):
-            self.phenotypes = self.phenotypes.union({p.phenotype})
+class VariantAccumulator5(VariantAccumulator15, object):
+    """
+    Accumulator class for visibility level 5: accumulates information about existence,
+    frequency count, sample count, variantCount>10, allele count and phenotype.
+    """
 
-    def make_query_0(self, variant):
+    def accumulate_variant(self, allele_response):
         """
-        Queries the variant object for visibility level 10 which changes the variantCount>10, the variantCount,
-        the phenotype and the caseIndex.
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 5 which changes the phenotype.
 
-        :param variant: A variant object.
+        :param allele_response: A AlleleResponseAccumulation object.
         """
+        super(VariantAccumulator5, self).accumulate_variant(allele_response)
+        for p in Phenotype.objects.filter(case=allele_response.variant.case):
+            allele_response.phenotype = allele_response.phenotype.union({p.phenotype})
+
+
+class VariantAccumulator0(VariantAccumulator5, object):
+    """
+    Accumulator class for visibility level 0: accumulates information about existence,
+    frequency count, sample count, variantCount>10, allele count, phenotype and case index.
+    """
+
+    def accumulate_variant(self, allele_response):
+        """
+        Accumulates the information about the AlleleResponseAccumulation object variant
+        for visibility level 0 which changes the case index.
+
+        :param allele_response: A AlleleResponseAccumulation object.
+        """
+        super(VariantAccumulator0, self).accumulate_variant(allele_response)
         # get case identifier
-        self.case_indices.append(variant.case.index)
-        self.variant_count += self._get_counts(variant)
-        if self.variant_count + self.internal_variant_count > 10:
-            self.variant_count_greater_ten = True
-        # get phenotype
-        for p in Phenotype.objects.filter(case=variant.case):
-            self.phenotypes = self.phenotypes.union({p.phenotype})
-
-    def _get_counts(self, variant):
-        """
-        Counts and changes the sample, frequency and variant count.
-
-        :param variant: A variant object.
-        :return: integer of variant counts
-        """
-        (
-            variant_count,
-            sample_count,
-            frequency_count,
-        ) = variant.get_variant_sample_frequency_count()
-        self.sample_count += sample_count
-        self.frequency_count += frequency_count
-        return variant_count
+        allele_response.case_indices.append(allele_response.variant.case.index)

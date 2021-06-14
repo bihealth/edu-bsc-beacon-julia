@@ -13,13 +13,22 @@ from .models import (
 from .json_structures import (
     AlleleRequest,
     AlleleResponse,
+    AlleleResponseAccumulation,
     Error,
     InfoResponse,
     DatasetResponse,
     OrganizationResponse,
     QueryResponse,
 )
-from .queries import CaseQueryVariant
+from .queries import (
+    VariantAccumulator,
+    VariantAccumulator0,
+    VariantAccumulator5,
+    VariantAccumulator10,
+    VariantAccumulator15,
+    VariantAccumulator20,
+    VariantAccumulator25
+)
 from datetime import date
 from django.utils import timezone
 
@@ -289,19 +298,21 @@ class CaseQueryEndpoint(View):
         self, consortia, chromosome, start, end, reference, alternative, release
     ):
         """
-        Queries the database for the given variant defined by the input parameters. Returns a
-        BeaconAlleleResponseObject from the json_structures module.
+        Queries the database for the given variant defined by the input parameters
+        and accumulates the variant information according its visibility level.
+        Returns an AlleleResponseAccumulationObject from the json_structures module.
 
-        :param consortia: A QuerySet of consortium objects which defining  the visibility level of the variant data.
+        :param consortia: A QuerySet of consortium objects which defining
+         the visibility level of the variant data.
         :param chromosome: A string of the reference name.
         :param start: A string of the start position.
         :param end: A string of the end position.
         :param reference: A string of the reference base.
         :param alternative: A string of the alternate base.
         :param release: A string of the release.
-        :return: AlleleResponseObject
+        :return: AlleleResponseAccumulationObject
         """
-        variant_query = CaseQueryVariant()
+        allele_response = AlleleResponseAccumulation()
         # convert 0-based variant position to 1-based
         start_1_based = int(start) + 1
         # query database for requested variant
@@ -317,39 +328,28 @@ class CaseQueryEndpoint(View):
         cases = []
         # for each variant get summary data according to visibility level
         for v in variants:
-            variant_query.exists = True
+            allele_response.variant = v
             visibility_level = self._get_highest_vis_level(v.case.project, consortia)
-            if visibility_level == 25:
-                variant_query.make_query_25(v)
-            if visibility_level == 20:
-                variant_query.make_query_20(v)
-            if visibility_level == 15:
-                variant_query.make_query_15(v)
-            if visibility_level == 10:
-                variant_query.make_query_10(v)
-            if visibility_level == 5:
-                variant_query.make_query_5(v)
             if visibility_level == 0:
-                variant_query.make_query_0(v)
+                variant_accumulator = VariantAccumulator0()
+            elif visibility_level == 5:
+                variant_accumulator = VariantAccumulator5()
+            elif visibility_level == 10:
+                variant_accumulator = VariantAccumulator10()
+            elif visibility_level == 15:
+                variant_accumulator = VariantAccumulator15()
+            elif visibility_level == 20:
+                variant_accumulator = VariantAccumulator20()
+            else:
+                variant_accumulator = VariantAccumulator25()
+            variant_accumulator.accumulate(allele_response)
             cases.append(v.case)
         # calculate frequency
-        if variant_query.exists is True:
-            variant_query.frequency = (
-                variant_query.variant_count / variant_query.frequency_count
-            )
-        return (
-            AlleleResponse(
-                variant_query.exists,
-                variant_query.sample_count,
-                variant_query.variant_count_greater_ten,
-                variant_query.variant_count,
-                round(variant_query.frequency, 2),
-                variant_query.coarse_phenotypes,
-                variant_query.phenotypes,
-                variant_query.case_indices,
-            ),
-            cases,
-        )
+        if allele_response.exists:
+            allele_response.frequency = round((
+                allele_response.variant_count / allele_response.frequency_count
+            ), 2)
+        return allele_response, cases
 
     def _query_metadata(self):
         """

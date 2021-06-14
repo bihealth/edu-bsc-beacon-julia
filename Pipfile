@@ -16,6 +16,9 @@ black = "*"
 flake8 = "*"
 seaborn = "*"
 numpy = "*"
+attr = "*"
+attrs = "*"
+typing = "*"
 
 [dev-packages]
 

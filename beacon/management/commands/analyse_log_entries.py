@@ -216,6 +216,7 @@ class Command(BaseCommand):
             )
         )
 
+    #logs = pandas.DataFrame(LogEntry.objects.all().values())
     def _create_data_frame(self, time_period=False, time_start=None, time_end=None):
         """
         Creates a pandas DataFrame object by querying the database for the the LogEntry entries
