@@ -1,16 +1,15 @@
 from django.test import TestCase
 from .factories import VariantFactory, PhenotypeFactory, CaseFactory
 from ..queries import (
-    VariantAccumulator,
     VariantAccumulator0,
     VariantAccumulator5,
     VariantAccumulator10,
     VariantAccumulator15,
     VariantAccumulator20,
     VariantAccumulator20Internal,
-    VariantAccumulator25
+    VariantAccumulator25,
 )
-from ..json_structures import AlleleResponseAccumulation, AlleleResponse
+from ..json_structures import AlleleResponseAccumulation
 
 
 class TestVariantAccumulator(TestCase):
@@ -135,7 +134,6 @@ class TestVariantAccumulator(TestCase):
         variant_accumulation.accumulate(allele_response)
         self.assertEqual(allele_response.variant_count_greater_ten, True)
         self.assertEqual(allele_response.frequency, 0)
-
 
     #: Test class VariantAccumulator0
     def test_variant_accumulator_0(self):

@@ -12,7 +12,6 @@ from .models import (
 )
 from .json_structures import (
     AlleleRequest,
-    AlleleResponse,
     AlleleResponseAccumulation,
     Error,
     InfoResponse,
@@ -21,13 +20,12 @@ from .json_structures import (
     QueryResponse,
 )
 from .queries import (
-    VariantAccumulator,
     VariantAccumulator0,
     VariantAccumulator5,
     VariantAccumulator10,
     VariantAccumulator15,
     VariantAccumulator20,
-    VariantAccumulator25
+    VariantAccumulator25,
 )
 from datetime import date
 from django.utils import timezone
@@ -346,9 +344,9 @@ class CaseQueryEndpoint(View):
             cases.append(v.case)
         # calculate frequency
         if allele_response.exists:
-            allele_response.frequency = round((
-                allele_response.variant_count / allele_response.frequency_count
-            ), 2)
+            allele_response.frequency = round(
+                (allele_response.variant_count / allele_response.frequency_count), 2
+            )
         return allele_response, cases
 
     def _query_metadata(self):

@@ -1,5 +1,4 @@
 from .models import Phenotype
-from .json_structures import AlleleResponseAccumulation
 from abc import ABC, abstractmethod
 
 
@@ -80,7 +79,9 @@ class VariantAccumulator20(VariantAccumulator20Internal):
 
         :param allele_response: A AlleleResponseAccumulation object.
         """
-        allele_response.internal_variant_count += allele_response.variant.get_variant_sample_frequency_count()[0]
+        allele_response.internal_variant_count += (
+            allele_response.variant.get_variant_sample_frequency_count()[0]
+        )
         super(VariantAccumulator20, self).accumulate_variant(allele_response)
 
 
@@ -97,7 +98,9 @@ class VariantAccumulator15(VariantAccumulator20Internal):
 
         :param allele_response: A AlleleResponseAccumulation object.
         """
-        allele_response.variant_count += allele_response.variant.get_variant_sample_frequency_count()[0]
+        allele_response.variant_count += (
+            allele_response.variant.get_variant_sample_frequency_count()[0]
+        )
         super(VariantAccumulator15, self).accumulate_variant(allele_response)
 
 
@@ -112,7 +115,7 @@ class VariantAccumulator10(VariantAccumulator15):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 10 which changes the coarse phenotype.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         super(VariantAccumulator10, self).accumulate_variant(allele_response)
         for p in Phenotype.objects.filter(case=allele_response.variant.case):
@@ -121,7 +124,7 @@ class VariantAccumulator10(VariantAccumulator15):
             )
 
 
-class VariantAccumulator5(VariantAccumulator15, object):
+class VariantAccumulator5(VariantAccumulator15):
     """
     Accumulator class for visibility level 5: accumulates information about existence,
     frequency count, sample count, variantCount>10, allele count and phenotype.
@@ -132,14 +135,14 @@ class VariantAccumulator5(VariantAccumulator15, object):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 5 which changes the phenotype.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         super(VariantAccumulator5, self).accumulate_variant(allele_response)
         for p in Phenotype.objects.filter(case=allele_response.variant.case):
             allele_response.phenotype = allele_response.phenotype.union({p.phenotype})
 
 
-class VariantAccumulator0(VariantAccumulator5, object):
+class VariantAccumulator0(VariantAccumulator5):
     """
     Accumulator class for visibility level 0: accumulates information about existence,
     frequency count, sample count, variantCount>10, allele count, phenotype and case index.
@@ -150,7 +153,7 @@ class VariantAccumulator0(VariantAccumulator5, object):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 0 which changes the case index.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         super(VariantAccumulator0, self).accumulate_variant(allele_response)
         # get case identifier

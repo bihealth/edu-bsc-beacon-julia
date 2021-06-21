@@ -134,9 +134,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         fig, ax = plt.subplots(1)
         figures = []
         file_names = []
-        Command()._plot_endpoint_per_time(
-            self.data, fig, ax, figures, file_names
-        )
+        Command()._plot_endpoint_per_time(self.data, fig, ax, figures, file_names)
         self.assertEqual(ax.title.get_text(), "Number of requests per endpoint")
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["requests_per_endpoint.pdf"])
@@ -344,9 +342,7 @@ class TestAnalyseLogEntriesMethods(TestCase):
         fig, ax = plt.subplots(1)
         figures = []
         file_names = []
-        Command()._plot_status_codes_per_time(
-            self.data, fig, ax, figures, file_names
-        )
+        Command()._plot_status_codes_per_time(self.data, fig, ax, figures, file_names)
         self.assertEqual(ax.title.get_text(), "Number of status codes from requests")
         self.assertEqual(figures, [fig])
         self.assertEqual(file_names, ["status_codes_requests.pdf"])

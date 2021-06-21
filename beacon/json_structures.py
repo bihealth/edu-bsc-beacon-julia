@@ -1,6 +1,6 @@
 import attr
 import typing
-from .models import Variant, Case
+from .models import Variant
 
 
 class QueryResponse:
@@ -94,14 +94,15 @@ class AlleleResponse(object):
     """
     An extended AlleleResponseObject defined by the beacon protocol.
     """
+
     exists: bool = False
     sample_count: int = 0
     variant_count_greater_ten: bool = False
     variant_count: int = 0
     frequency: float = 0
-    coarse_phenotype: set = set()
-    phenotype: set = set()
-    case_indices: list = []
+    coarse_phenotype = attr.ib(factory=set)
+    phenotype = attr.ib(factory=set)
+    case_indices = attr.ib(factory=list)
     error: typing.Optional[Error] = None
 
     def create_dict(self):
@@ -129,6 +130,7 @@ class AlleleResponseAccumulation(AlleleResponse):
     """
     A Case for getting and collecting the variant data depending on the visibility level defined by a consortium.
     """
+
     internal_variant_count: int = 0
     frequency_count: int = 0
     variant: Variant = Variant()

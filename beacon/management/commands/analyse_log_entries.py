@@ -81,6 +81,7 @@ class Command(BaseCommand):
         plt.style.use("seaborn-bright")
         # checks whether data is just from one month
         # indicator for used daily data points in plots
+        month_day = False
         if log_data_indexed.index.year.nunique() == 1:
             month_day = True
         # figures and plot names for saving them later
@@ -216,7 +217,7 @@ class Command(BaseCommand):
             )
         )
 
-    #logs = pandas.DataFrame(LogEntry.objects.all().values())
+    # logs = pandas.DataFrame(LogEntry.objects.all().values())
     def _create_data_frame(self, time_period=False, time_start=None, time_end=None):
         """
         Creates a pandas DataFrame object by querying the database for the the LogEntry entries
@@ -303,7 +304,9 @@ class Command(BaseCommand):
             }
         )
 
-    def _plot_endpoint_per_time(self, data, fig, ax,  figures, file_names, month_day=False):
+    def _plot_endpoint_per_time(
+        self, data, fig, ax, figures, file_names, month_day=False
+    ):
         """
         Creates a plot containing information about the number of request per endpoint and
         per time scaled per month or per year depending on the month_day input. Appends

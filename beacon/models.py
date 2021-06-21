@@ -2,7 +2,6 @@ from django.db import models
 import networkx
 from mysite.settings import HPO_COARSE_TERMS, HPO_GRAPH
 
-
 class Project(models.Model):
     """
     A SODAR project.
