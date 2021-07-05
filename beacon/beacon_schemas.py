@@ -27,7 +27,6 @@ class QueryResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of QueryResponseObject
         """
         if not self.dataset_allele_response:
@@ -58,7 +57,6 @@ class AlleleRequest:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of AlleleRequestObject
         """
         return dict(
@@ -83,7 +81,6 @@ class Error:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of ErrorObject
         """
         return dict(errorCode=self.error_code, errorMessage=self.error_message)
@@ -103,12 +100,10 @@ class AlleleResponse(object):
     coarse_phenotype = attr.ib(factory=set)
     phenotype = attr.ib(factory=set)
     case_indices = attr.ib(factory=list)
-    error: typing.Optional[Error] = None
 
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of AlleleResponseObject
         """
         allele_response_dict = {
@@ -120,7 +115,6 @@ class AlleleResponse(object):
             "coarsePhenotype": sorted(list(self.coarse_phenotype)),
             "phenotype": sorted(list(self.phenotype)),
             "caseName": sorted(self.case_indices),
-            "error": self.error,
         }
         return allele_response_dict
 
@@ -153,7 +147,6 @@ class InfoResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of InfoResponseObject
         """
         return dict(
@@ -180,7 +173,6 @@ class DatasetResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of DatasetResponseObject
         """
         return dict(
@@ -205,7 +197,6 @@ class OrganizationResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
-
         :return: dict of OrganizationResponseObject
         """
         return dict(id=self.id, name=self.name, contactUrl=self.contact_url)

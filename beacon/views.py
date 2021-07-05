@@ -10,7 +10,7 @@ from .models import (
     MetadataBeaconOrganization,
     MetadataBeaconDataset,
 )
-from .json_structures import (
+from .beacon_schemas import (
     AlleleRequest,
     AlleleResponseAccumulation,
     Error,
@@ -19,7 +19,7 @@ from .json_structures import (
     OrganizationResponse,
     QueryResponse,
 )
-from .queries import (
+from .variant_accumulation import (
     VariantAccumulator0,
     VariantAccumulator5,
     VariantAccumulator10,

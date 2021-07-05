@@ -14,7 +14,7 @@ class VariantAccumulator(ABC):
         Abstract method for the accumulation the information about the
         AlleleResponseAccumulation object variant.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         pass
 
@@ -23,7 +23,7 @@ class VariantAccumulator(ABC):
         Call method for the accumulation factory method to accumulate information
         about the AlleleResponseAccumulation object variant.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         self.accumulate_variant(allele_response)
 
@@ -39,7 +39,7 @@ class VariantAccumulator25(VariantAccumulator):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 25 (=public).
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         super(VariantAccumulator25, self).accumulate_variant(allele_response)
         allele_response.exists = True
@@ -59,7 +59,7 @@ class VariantAccumulator20Internal(VariantAccumulator25):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 20 which changes the variantCount>10.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         super(VariantAccumulator20Internal, self).accumulate_variant(allele_response)
         if allele_response.variant_count + allele_response.internal_variant_count > 10:
@@ -77,7 +77,7 @@ class VariantAccumulator20(VariantAccumulator20Internal):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 20 which changes the internal variant count.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         allele_response.internal_variant_count += (
             allele_response.variant.get_variant_sample_frequency_count()[0]
@@ -96,7 +96,7 @@ class VariantAccumulator15(VariantAccumulator20Internal):
         Accumulates the information about the AlleleResponseAccumulation object variant
         for visibility level 15 which changes the variant count.
 
-        :param allele_response: A AlleleResponseAccumulation object.
+        :param allele_response: An AlleleResponseAccumulation object.
         """
         allele_response.variant_count += (
             allele_response.variant.get_variant_sample_frequency_count()[0]

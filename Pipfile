@@ -12,13 +12,12 @@ django-nose = "*"
 coverage = "*"
 pandas = "*"
 matplotlib = "*"
-black = "*"
-flake8 = "*"
 seaborn = "*"
 numpy = "*"
 attr = "*"
 attrs = "*"
 typing = "*"
+sphinx = "*"
 
 [dev-packages]
 

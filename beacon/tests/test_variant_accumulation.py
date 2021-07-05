@@ -1,6 +1,6 @@
 from django.test import TestCase
 from .factories import VariantFactory, PhenotypeFactory, CaseFactory
-from ..queries import (
+from ..variant_accumulation import (
     VariantAccumulator0,
     VariantAccumulator5,
     VariantAccumulator10,
@@ -9,7 +9,7 @@ from ..queries import (
     VariantAccumulator20Internal,
     VariantAccumulator25,
 )
-from ..json_structures import AlleleResponseAccumulation
+from ..beacon_schemas import AlleleResponseAccumulation
 
 
 class TestVariantAccumulator(TestCase):

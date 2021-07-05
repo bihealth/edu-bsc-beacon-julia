@@ -703,7 +703,6 @@ class TestCaseQueryEndpoint(TestCase):
                                 [p1.phenotype, p2.phenotype, p5.phenotype]
                             ),
                             "caseName": [str(v1.case.index), str(v2.case.index)],
-                            "error": None,
                         },
                     ],
                 },
