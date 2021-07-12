@@ -354,7 +354,7 @@ class Command(BaseCommand):
                 xlabel="Time period (year, month)",
             )
         ax.set_title("Number of requests per endpoint")
-        ax.tick_params("x", labelrotation=360)
+        ax.tick_params("x", labelrotation=350)
         figures.append(fig)
         file_names.append("requests_per_endpoint.pdf")
 
@@ -400,14 +400,14 @@ class Command(BaseCommand):
         else:
             status_codes_df.groupby(
                 [status_codes_df.index.year, status_codes_df.index.month]
-            ).size().unstack().plot(
+            ).sum().plot(
                 kind="line",
                 style=".-",
                 ax=ax,
                 ylabel="Number of requests",
                 xlabel="Time period (year, month)",
             )
-        ax.tick_params("x", labelrotation=360)
+        ax.tick_params("x", labelrotation=350)
         ax.set_title("Number of status codes from requests")
         figures.append(fig)
         file_names.append("status_codes_requests.pdf")
@@ -428,7 +428,7 @@ class Command(BaseCommand):
             kind="bar", ax=ax, ylabel="Number of requests", xlabel="Remote site"
         )
         ax.set_title("Number of requests per remote site")
-        ax.tick_params("x", labelrotation=360)
+        ax.tick_params("x", labelrotation=350)
         figures.append(fig)
         file_names.append("requests_per_remote_site.pdf")
 
@@ -524,7 +524,7 @@ class Command(BaseCommand):
             rects = ax.patches
             for rect, label, height in zip(
                 rects,
-                [("%s%s" % (mp * 100, "%")) for mp in max_percentage[:15]],
+                [("%s%s" % (round(mp * 100,2), "%")) for mp in max_percentage[:15]],
                 sorted(total_call_counts, reverse=True)[:15],
             ):
                 ax.text(
@@ -534,7 +534,7 @@ class Command(BaseCommand):
                     ha="center",
                     va="bottom",
                 )
-            ax.tick_params("x", labelrotation=360)
+            ax.tick_params("x", labelrotation=350)
             ax.set_title(
                 "Number of requests per %s and percentage of top remote sites"
                 % variant_container
@@ -654,7 +654,7 @@ class Command(BaseCommand):
             rects = ax.patches
             for rect, label, height in zip(
                 rects,
-                [("%s%s" % (mp * 100, "%")) for mp in max_percentage[:15]],
+                [("%s%s" % (round(mp * 100, 2), "%")) for mp in max_percentage[:15]],
                 sorted(total_call_counts, reverse=True)[:15],
             ):
                 ax.text(
@@ -664,7 +664,7 @@ class Command(BaseCommand):
                     ha="center",
                     va="bottom",
                 )
-            ax.tick_params("x", labelrotation=360)
+            ax.tick_params("x", labelrotation=350)
             ax.set_title(
                 "Number of requests per %s and percentage of top users per remote site"
                 % variant_container
@@ -722,7 +722,7 @@ class Command(BaseCommand):
                     access_limit = remote_site.access_limit
                 xtick_labels.append("%s, %s" % (label_text, access_limit))
             ax.set_xticklabels(xtick_labels)
-            ax.tick_params("x", labelrotation=360)
+            ax.tick_params("x", labelrotation=350)
             ax.set_title(
                 "Number of by access limit restricted requests per remote site"
             )

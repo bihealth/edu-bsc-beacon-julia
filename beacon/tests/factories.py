@@ -247,7 +247,7 @@ class CaseFactory(factory.django.DjangoModelFactory):
 
 
 CHROMOSOME_MAPPING = {
-    str(chrom): i + 1 for i, chrom in enumerate(list(range(1, 23)) + ["X", "Y"])
+    str(chrom): i + 1 for i, chrom in enumerate(list(range(1, 24)))
 }
 
 
@@ -374,7 +374,7 @@ class LogEntryFactory(factory.django.DjangoModelFactory):
     #: The release passed by the beacon query request
     release = "GRCh37"
     #: The chromosome passed by the beacon query request
-    chromosome = factory.Sequence(lambda n: list(CHROMOSOME_MAPPING.keys())[n % 25])
+    chromosome = factory.Iterator(list(CHROMOSOME_MAPPING.keys()))
     #: The start position passed by the beacon query request, 1-based
     start = factory.Sequence(lambda n: (n + 1) * 100)
     #: The end position passed by the beacon query request, 1-based
