@@ -41,8 +41,8 @@ class Command(BaseCommand):
         Creates a statistical overview of the logged requests.
 
         :param args:
-        :param options: Flags for optionally create a csv file "--as_csv", save plots in given directory "--path path"
-        and define the to be observed time period "--time_period '2021-10-01' '2022-10-01'"
+        :param options: Flags for optionally create a csv file "--as_csv", save plots in given directory "--path" 
+         and define the to be observed time period "--time_period '2021-10-01' '2022-10-01'"
         :return: A stdout string if successful otherwise returns an error or warning.
         """
         # if argument given time period, filter for given time period
