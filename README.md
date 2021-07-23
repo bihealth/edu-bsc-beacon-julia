@@ -99,5 +99,5 @@ Then the server can be started and the new Beacon enlighted!<br>
 `python manage.py runserver`
 
 ## Further Information
-More information and a detailled documentation is provided [here](...).
+More information and a detailled documentation is provided [here](https://github.com/bihealth/edu-bsc-beacon-julia/blob/main/docs/build/html/index.html).
 
