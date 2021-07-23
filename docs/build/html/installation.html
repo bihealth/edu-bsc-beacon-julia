@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Installations and First Steps &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Beacon" href="beacon.html" />
+    <link rel="prev" title="Welcome to Beacon’s documentation!" href="info.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installations and First Steps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#first-steps">First Steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-request">Example Request</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="beacon.html">Beacon</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Installations and First Steps</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="installations-and-first-steps">
+<h1>Installations and First Steps<a class="headerlink" href="#installations-and-first-steps" title="Permalink to this headline">¶</a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>It can be installed cloning the github repository:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git clone https://github.com/bihealth/edu-bsc-beacon-julia
+</pre></div>
+</div>
+<p>Then the pipenv should be activated:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pipenv install
+<span class="gp">$ </span>pipenv shell
+</pre></div>
+</div>
+<p>For trying if the installation was succesfull tests can be run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python manage.py <span class="nb">test</span>
+</pre></div>
+</div>
+</section>
+<section id="first-steps">
+<h2>First Steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h2>
+<p>Before the system is fully functionable those steps have to be done:</p>
+<ol class="arabic simple">
+<li><p>register as an admin</p></li>
+</ol>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python manage.py createsuperuser
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>open the admin web interface by opening a web browser and go to “/admin/” on your local domain.</p></li>
+<li><p>add a MetadataBeacon Entry</p></li>
+<li><p>add a MetadatBeaconOrganisation Entry</p></li>
+<li><p>add a MetadatBeacondataset</p></li>
+<li><p>add a RemoteSite with name=”public” and key=”public”</p></li>
+</ol>
+<p>Then the server can be started and the new Beacon enlighted!</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python manage.py runserver
+</pre></div>
+</div>
+</section>
+<section id="example-request">
+<h2>Example Request<a class="headerlink" href="#example-request" title="Permalink to this headline">¶</a></h2>
+<p>This is an example request of the info endpoint:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>curl http://127.0.0.1:8000/
+<span class="go">{</span>
+<span class="go">  &quot;id&quot;: &quot;beacon-01&quot;,</span>
+<span class="go">  &quot;name&quot;: &quot;Beacon 1&quot;,</span>
+<span class="go">  &quot;apiVersion&quot;: &quot;1.0.0&quot;,</span>
+<span class="go">  &quot;datasets&quot;: [</span>
+<span class="go">    {</span>
+<span class="go">      &quot;id&quot;: &quot;dataset_01&quot;,</span>
+<span class="go">      &quot;name&quot;: &quot;dataset&quot;</span>
+<span class="go">      &quot;assemblyId&quot;: &quot;GRCh37&quot;,</span>
+<span class="go">      &quot;createDateTime&quot;:&quot;2021-07-05T00:00.000Z&quot;,</span>
+<span class="go">      &quot;updateDateTime&quot;:&quot;2021-07-05T00:00.000Z&quot;,</span>
+<span class="go">    }</span>
+<span class="go">  ],</span>
+<span class="go">  &quot;organization&quot;: {</span>
+<span class="go">    &quot;id&quot;: &quot;organization_1&quot;,</span>
+<span class="go">    &quot;name&quot;: &quot;First extended Beacon organization.&quot;,</span>
+<span class="go">    &quot;contactUrl&quot;: &quot;contact@email.com&quot;,</span>
+<span class="go">  },</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<p>This is an example request of the query endpoint:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>curl -H <span class="s2">&quot;Authorization:xxx&quot;</span> -H <span class="s2">&quot;X-Remote-User:user_1&quot;</span> -v -X GET <span class="s2">&quot;http://127.0.0.1:8000/query?referenceName=1&amp;start=12344&amp;end=12345&amp;referenceBases=C&amp;alternateBases=T&quot;</span>
+<span class="go">{</span>
+<span class="go">    &quot;beaconId&quot;: &quot;beacon-01&quot;,</span>
+<span class="go">    &quot;apiVersion&quot;: &quot;1.0.0&quot;,</span>
+<span class="go">    &quot;exists&quot;: true,</span>
+<span class="go">    &quot;error&quot;: null,</span>
+<span class="go">    &quot;alleleRequest&quot;: {</span>
+<span class="go">        &quot;referenceName&quot;: &quot;1&quot;,</span>
+<span class="go">        &quot;start&quot;: 12344,</span>
+<span class="go">        &quot;end&quot;: 12345,</span>
+<span class="go">        &quot;referenceBases&quot;: &quot;C&quot;,</span>
+<span class="go">        &quot;alternateBases&quot;: &quot;T&quot;,</span>
+<span class="go">        &quot;assemblyId&quot;: &quot;GRCh37&quot;,</span>
+<span class="go">    },</span>
+<span class="go">    &quot;datasetAlleleResponses&quot;: [</span>
+<span class="go">        {</span>
+<span class="go">            &quot;exists&quot;: true,</span>
+<span class="go">            &quot;sampleCount&quot;: 7,</span>
+<span class="go">            &quot;variantCount&gt;10&quot;: True,</span>
+<span class="go">            &quot;variantCount&quot;: 7,</span>
+<span class="go">            &quot;frequency&quot;: 0.53,</span>
+<span class="go">            &quot;coarsePhenotype&quot;: [&quot;HP:0000271&quot;],</span>
+<span class="go">            &quot;phenotype&quot;: [&quot;HP:0025521&quot;],</span>
+<span class="go">            &quot;caseName&quot;: [&quot;case_index_01&quot;, &quot;case_index_02&quot;],</span>
+<span class="go">        }</span>
+<span class="go">    ]</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="beacon.html" class="btn btn-neutral float-right" title="Beacon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="info.html" class="btn btn-neutral float-left" title="Welcome to Beacon’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,576 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>beacon.views &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installations and First Steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beacon.html">Beacon</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>beacon.views</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for beacon.views</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">JsonResponse</span>
+<span class="kn">from</span> <span class="nn">django.views</span> <span class="kn">import</span> <span class="n">View</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Variant</span><span class="p">,</span>
+    <span class="n">RemoteSite</span><span class="p">,</span>
+    <span class="n">Consortium</span><span class="p">,</span>
+    <span class="n">LogEntry</span><span class="p">,</span>
+    <span class="n">MetadataBeacon</span><span class="p">,</span>
+    <span class="n">MetadataBeaconOrganization</span><span class="p">,</span>
+    <span class="n">MetadataBeaconDataset</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.beacon_schemas</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AlleleRequest</span><span class="p">,</span>
+    <span class="n">AlleleResponseAccumulation</span><span class="p">,</span>
+    <span class="n">Error</span><span class="p">,</span>
+    <span class="n">InfoResponse</span><span class="p">,</span>
+    <span class="n">DatasetResponse</span><span class="p">,</span>
+    <span class="n">OrganizationResponse</span><span class="p">,</span>
+    <span class="n">QueryResponse</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.variant_accumulation</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">VariantAccumulator0</span><span class="p">,</span>
+    <span class="n">VariantAccumulator5</span><span class="p">,</span>
+    <span class="n">VariantAccumulator10</span><span class="p">,</span>
+    <span class="n">VariantAccumulator15</span><span class="p">,</span>
+    <span class="n">VariantAccumulator20</span><span class="p">,</span>
+    <span class="n">VariantAccumulator25</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<div class="viewcode-block" id="CaseInfoEndpoint"><a class="viewcode-back" href="../../views.html#beacon.views.CaseInfoEndpoint">[docs]</a><span class="k">class</span> <span class="nc">CaseInfoEndpoint</span><span class="p">(</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="CaseInfoEndpoint.get"><a class="viewcode-back" href="../../views.html#beacon.views.CaseInfoEndpoint.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        GET method for beacon info endpoint</span>
+
+<span class="sd">        :param request: A django HttpRequest object.</span>
+<span class="sd">        :return: JSONResponse</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles requests for beacon &#39;info&#39; endpoint.</span>
+
+<span class="sd">        :param request: A django HttpRequest object.</span>
+<span class="sd">        :return: JSONResponse</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># collect metadata from database</span>
+        <span class="n">metadata_beacon</span> <span class="o">=</span> <span class="n">MetadataBeacon</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="n">MetadataBeaconDataset</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">metadata_beacon</span><span class="o">=</span><span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">datasets_dict_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">datasets</span><span class="p">:</span>
+            <span class="c1"># create json response scheme for dataset</span>
+            <span class="n">datasets_dict</span> <span class="o">=</span> <span class="n">DatasetResponse</span><span class="p">(</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">beacon_data_id</span><span class="p">,</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">assembly_id</span><span class="p">,</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">create_date_time</span><span class="p">,</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">update_date_time</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+            <span class="n">datasets_dict_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datasets_dict</span><span class="p">)</span>
+        <span class="n">organisations</span> <span class="o">=</span> <span class="n">MetadataBeaconOrganization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">metadata_beacon</span><span class="o">=</span><span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="c1"># create json response scheme for organization</span>
+        <span class="n">dict_org</span> <span class="o">=</span> <span class="n">OrganizationResponse</span><span class="p">(</span>
+            <span class="n">organisations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">beacon_org_id</span><span class="p">,</span>
+            <span class="n">organisations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">organisations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contact_url</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+        <span class="c1"># create json output scheme for info endpoint</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">JsonResponse</span><span class="p">(</span>
+            <span class="n">InfoResponse</span><span class="p">(</span>
+                <span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">beacon_id</span><span class="p">,</span>
+                <span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">api_version</span><span class="p">,</span>
+                <span class="n">datasets_dict_list</span><span class="p">,</span>
+                <span class="n">dict_org</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">(),</span>
+            <span class="n">json_dumps_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;indent&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="c1"># log request</span>
+        <span class="n">LogEntry</span><span class="p">(</span>
+            <span class="n">ip_address</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REMOTE_ADDR&quot;</span><span class="p">),</span>
+            <span class="n">user_identifier</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;USER&quot;</span><span class="p">),</span>
+            <span class="n">remote_site</span><span class="o">=</span><span class="n">RemoteSite</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;public&quot;</span><span class="p">),</span>
+            <span class="n">date_time</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;info&quot;</span><span class="p">,</span>
+            <span class="n">server_protocol</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">[</span><span class="s2">&quot;SERVER_PROTOCOL&quot;</span><span class="p">],</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+            <span class="n">response_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">content</span><span class="p">),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="CaseQueryEndpoint"><a class="viewcode-back" href="../../views.html#beacon.views.CaseQueryEndpoint">[docs]</a><span class="k">class</span> <span class="nc">CaseQueryEndpoint</span><span class="p">(</span><span class="n">View</span><span class="p">):</span>
+<div class="viewcode-block" id="CaseQueryEndpoint.get"><a class="viewcode-back" href="../../views.html#beacon.views.CaseQueryEndpoint.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        GET method for beacon &#39;/query&#39; endpoint.</span>
+
+<span class="sd">        :param request: A django HttpRequest object containing query string and headers.</span>
+<span class="sd">        :rtype: JSONResponse</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chromosome</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;referenceName&quot;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;referenceBases&quot;</span><span class="p">)</span>
+        <span class="n">alternative</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alternateBases&quot;</span><span class="p">)</span>
+        <span class="n">release</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assemblyId&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">,</span> <span class="n">release</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CaseQueryEndpoint.post"><a class="viewcode-back" href="../../views.html#beacon.views.CaseQueryEndpoint.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        POST method for beacon &#39;/query&#39; endpoint.</span>
+
+<span class="sd">        :param request: A django HttpRequest object containing posted data and headers.</span>
+<span class="sd">        :rtype: JSONResponse</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chromosome</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;referenceName&quot;</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;end&quot;</span><span class="p">)</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;referenceBases&quot;</span><span class="p">)</span>
+        <span class="n">alternative</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alternateBases&quot;</span><span class="p">)</span>
+        <span class="n">release</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assemblyId&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle</span><span class="p">(</span>
+            <span class="n">request</span><span class="p">,</span> <span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">,</span> <span class="n">release</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">,</span> <span class="n">release</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles request for beacon &#39;query&#39; endpoint.</span>
+
+<span class="sd">        :param request: A django HttpRequest object.</span>
+<span class="sd">        :param chromosome: A string of the reference name passed by the request.</span>
+<span class="sd">        :param start: A string of the start position passed by the request.</span>
+<span class="sd">        :param end: A string of the end position passed by the request.</span>
+<span class="sd">        :param reference: A string of the reference base passed by the request.</span>
+<span class="sd">        :param alternative: A string of the alternate base passed by the request.</span>
+<span class="sd">        :param release: A string of the release passed by the request.</span>
+<span class="sd">        :return: JSONResponse</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># set requested cases to None</span>
+            <span class="n">cases</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+            <span class="c1"># &#39;collect&#39; request parameters</span>
+            <span class="k">if</span> <span class="n">release</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">release</span> <span class="o">=</span> <span class="s2">&quot;GRCh37&quot;</span>
+            <span class="n">allele_request</span> <span class="o">=</span> <span class="n">AlleleRequest</span><span class="p">(</span>
+                <span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">,</span> <span class="n">release</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+            <span class="c1"># get metadata</span>
+            <span class="n">beacon_id</span><span class="p">,</span> <span class="n">api_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_metadata</span><span class="p">()</span>
+            <span class="n">output_json</span> <span class="o">=</span> <span class="n">QueryResponse</span><span class="p">(</span>
+                <span class="n">beacon_id</span><span class="p">,</span> <span class="n">api_version</span><span class="p">,</span> <span class="n">allele_request</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+            <span class="c1"># authentication with password</span>
+            <span class="k">if</span> <span class="s2">&quot;Authorization&quot;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;public&quot;</span>
+            <span class="n">remote_site</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_authenticate</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="c1"># authentication failed</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">list</span><span class="p">(</span><span class="n">remote_site</span><span class="p">):</span>
+                <span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Error</span><span class="p">(</span>
+                    <span class="mi">401</span><span class="p">,</span> <span class="s2">&quot;You are not authorized as a user.&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+                <span class="n">remote_site</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+                <span class="k">raise</span> <span class="ne">UnboundLocalError</span><span class="p">()</span>
+            <span class="c1"># check if input parameters are valid</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_query_input</span><span class="p">(</span><span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">):</span>
+                <span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Error</span><span class="p">(</span>
+                    <span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;The input format is invalid.&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">UnboundLocalError</span><span class="p">()</span>
+            <span class="c1"># check if access limit of remote site is exceeded</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_access_limit</span><span class="p">(</span><span class="n">remote_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Error</span><span class="p">(</span>
+                    <span class="mi">403</span><span class="p">,</span> <span class="s2">&quot;You have exceeded your access limit.&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">UnboundLocalError</span><span class="p">()</span>
+            <span class="c1"># query database for variant request</span>
+            <span class="n">query_parameters</span><span class="p">,</span> <span class="n">cases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_variant</span><span class="p">(</span>
+                <span class="n">remote_site</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">consortia</span><span class="p">,</span>
+                <span class="n">chromosome</span><span class="p">,</span>
+                <span class="n">start</span><span class="p">,</span>
+                <span class="n">end</span><span class="p">,</span>
+                <span class="n">reference</span><span class="p">,</span>
+                <span class="n">alternative</span><span class="p">,</span>
+                <span class="n">release</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># define json output for query endpoint</span>
+            <span class="k">if</span> <span class="n">query_parameters</span><span class="o">.</span><span class="n">exists</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;exists&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;exists&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;datasetAlleleResponses&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">query_parameters</span><span class="o">.</span><span class="n">create_dict</span><span class="p">()]</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="n">output_json</span><span class="p">,</span> <span class="n">json_dumps_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;indent&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+        <span class="k">except</span> <span class="ne">UnboundLocalError</span><span class="p">:</span>  <span class="c1"># Not authenticated or invalid arguments</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">JsonResponse</span><span class="p">(</span>
+                <span class="n">output_json</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="n">output_json</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">][</span><span class="s2">&quot;errorCode&quot;</span><span class="p">],</span>
+                <span class="n">json_dumps_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;indent&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+            <span class="p">)</span>
+        <span class="c1"># log request</span>
+        <span class="n">log_entry</span> <span class="o">=</span> <span class="n">LogEntry</span><span class="p">(</span>
+            <span class="n">ip_address</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REMOTE_ADDR&quot;</span><span class="p">),</span>
+            <span class="n">user_identifier</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HTTP_X_REMOTE_USER&quot;</span><span class="p">),</span>
+            <span class="n">remote_site</span><span class="o">=</span><span class="n">remote_site</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">date_time</span><span class="o">=</span><span class="n">timezone</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;query&quot;</span><span class="p">,</span>
+            <span class="n">server_protocol</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">META</span><span class="p">[</span><span class="s2">&quot;SERVER_PROTOCOL&quot;</span><span class="p">],</span>
+            <span class="n">release</span><span class="o">=</span><span class="n">release</span><span class="p">,</span>
+            <span class="n">chromosome</span><span class="o">=</span><span class="n">chromosome</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">reference</span><span class="o">=</span><span class="n">reference</span><span class="p">,</span>
+            <span class="n">alternative</span><span class="o">=</span><span class="n">alternative</span><span class="p">,</span>
+            <span class="n">status_code</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+            <span class="n">response_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">content</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">log_entry</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">log_entry</span><span class="o">.</span><span class="n">cases</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cases</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">def</span> <span class="nf">_check_query_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the parameters passed by the request have a invalid format.</span>
+
+<span class="sd">        :param chromosome: A string of the reference name.</span>
+<span class="sd">        :param start: A string of the start position.</span>
+<span class="sd">        :param end: A string of the end position.</span>
+<span class="sd">        :param reference: A string of the reference base.</span>
+<span class="sd">        :param alternative: A string of the alternate base.</span>
+<span class="sd">        :return: bool: True if invalid, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chromosome_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[1-9]|[1][0-9]|[2][0-2]|[XY]&quot;</span><span class="p">)</span>
+        <span class="n">start_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">)</span>
+        <span class="n">end_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">)</span>
+        <span class="n">reference_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[ACGTN]+&quot;</span><span class="p">)</span>
+        <span class="n">alternative_pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[ACGTN]+&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">chromosome_pattern</span><span class="p">,</span> <span class="n">chromosome</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">start_pattern</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">end_pattern</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">reference_pattern</span><span class="p">,</span> <span class="n">reference</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">alternative_pattern</span><span class="p">,</span> <span class="n">alternative</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_authenticate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Authenticates the client by finding fitting remote site for key.</span>
+
+<span class="sd">        :param key: A key string.</span>
+<span class="sd">        :rtype: django QuerySet containing a RemoteSite object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">remote_site</span> <span class="o">=</span> <span class="n">RemoteSite</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">remote_site</span>
+
+    <span class="k">def</span> <span class="nf">_check_access_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_site</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the client exceeded his access limit defined by the Remote Site.</span>
+
+<span class="sd">        :param remote_site: A RemoteSite object.</span>
+<span class="sd">        :return: bool: True if exceeded, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">access_limit</span> <span class="o">=</span> <span class="n">remote_site</span><span class="o">.</span><span class="n">access_limit</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">LogEntry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">remote_site</span><span class="o">=</span><span class="n">remote_site</span><span class="p">,</span> <span class="n">date_time__contains</span><span class="o">=</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">()</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+            <span class="o">&gt;=</span> <span class="n">access_limit</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_query_variant</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">consortia</span><span class="p">,</span> <span class="n">chromosome</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">alternative</span><span class="p">,</span> <span class="n">release</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Queries the database for the given variant defined by the input parameters</span>
+<span class="sd">        and accumulates the variant information according its visibility level.</span>
+<span class="sd">        Returns an AlleleResponseAccumulationObject from the json_structures module.</span>
+
+<span class="sd">        :param consortia: A QuerySet of consortium objects which defining</span>
+<span class="sd">         the visibility level of the variant data.</span>
+<span class="sd">        :param chromosome: A string of the reference name.</span>
+<span class="sd">        :param start: A string of the start position.</span>
+<span class="sd">        :param end: A string of the end position.</span>
+<span class="sd">        :param reference: A string of the reference base.</span>
+<span class="sd">        :param alternative: A string of the alternate base.</span>
+<span class="sd">        :param release: A string of the release.</span>
+<span class="sd">        :return: AlleleResponseAccumulationObject</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allele_response</span> <span class="o">=</span> <span class="n">AlleleResponseAccumulation</span><span class="p">()</span>
+        <span class="c1"># convert 0-based variant position to 1-based</span>
+        <span class="n">start_1_based</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="c1"># query database for requested variant</span>
+        <span class="n">variants</span> <span class="o">=</span> <span class="n">Variant</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">chromosome</span><span class="o">=</span><span class="n">chromosome</span><span class="p">,</span>
+            <span class="n">start</span><span class="o">=</span><span class="n">start_1_based</span><span class="p">,</span>
+            <span class="n">release</span><span class="o">=</span><span class="n">release</span><span class="p">,</span>
+            <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span>
+            <span class="n">reference</span><span class="o">=</span><span class="n">reference</span><span class="p">,</span>
+            <span class="n">alternative</span><span class="o">=</span><span class="n">alternative</span><span class="p">,</span>
+            <span class="n">case__project__consortium__in</span><span class="o">=</span><span class="n">consortia</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+        <span class="n">cases</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># for each variant get summary data according to visibility level</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variants</span><span class="p">:</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">visibility_level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_highest_vis_level</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">case</span><span class="o">.</span><span class="n">project</span><span class="p">,</span> <span class="n">consortia</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">visibility_level</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">variant_accumulator</span> <span class="o">=</span> <span class="n">VariantAccumulator0</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">visibility_level</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="n">variant_accumulator</span> <span class="o">=</span> <span class="n">VariantAccumulator5</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">visibility_level</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">variant_accumulator</span> <span class="o">=</span> <span class="n">VariantAccumulator10</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">visibility_level</span> <span class="o">==</span> <span class="mi">15</span><span class="p">:</span>
+                <span class="n">variant_accumulator</span> <span class="o">=</span> <span class="n">VariantAccumulator15</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">visibility_level</span> <span class="o">==</span> <span class="mi">20</span><span class="p">:</span>
+                <span class="n">variant_accumulator</span> <span class="o">=</span> <span class="n">VariantAccumulator20</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">variant_accumulator</span> <span class="o">=</span> <span class="n">VariantAccumulator25</span><span class="p">()</span>
+            <span class="n">variant_accumulator</span><span class="o">.</span><span class="n">accumulate</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span>
+            <span class="n">cases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">case</span><span class="p">)</span>
+        <span class="c1"># calculate frequency</span>
+        <span class="k">if</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">exists</span><span class="p">:</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">frequency</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">allele_response</span><span class="o">.</span><span class="n">variant_count</span> <span class="o">/</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">frequency_count</span><span class="p">),</span> <span class="mi">2</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">allele_response</span><span class="p">,</span> <span class="n">cases</span>
+
+    <span class="k">def</span> <span class="nf">_query_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Queries the database for the beacon metadata.</span>
+
+<span class="sd">        :return: beacon_id string, api_version string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metadata_beacon</span> <span class="o">=</span> <span class="n">MetadataBeacon</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">beacon_id</span><span class="p">,</span> <span class="n">metadata_beacon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">api_version</span>
+
+    <span class="k">def</span> <span class="nf">_get_highest_vis_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projects</span><span class="p">,</span> <span class="n">consortia</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Looks up which is the highest visibility level for which the data from the project can be queried.</span>
+
+<span class="sd">        :param projects: A project object.</span>
+<span class="sd">        :param consortia: A consortia QuerySet.</span>
+<span class="sd">        :return: A visibility level integer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">project_consortia</span> <span class="o">=</span> <span class="n">Consortium</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">projects</span><span class="o">=</span><span class="n">projects</span><span class="p">,</span> <span class="n">id__in</span><span class="o">=</span><span class="n">consortia</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="s2">&quot;visibility_level&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">([</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;visibility_level&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">project_consortia</span><span class="p">])</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

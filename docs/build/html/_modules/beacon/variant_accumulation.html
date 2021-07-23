@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>beacon.variant_accumulation &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installations and First Steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beacon.html">Beacon</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>beacon.variant_accumulation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for beacon.variant_accumulation</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Phenotype</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+
+<div class="viewcode-block" id="VariantAccumulator"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The accumulator class declares the factory method accumulate_variant.</span>
+<span class="sd">    The accumulator&#39;s subclasses provide the implementation of this method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator.accumulate_variant">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract method for the accumulation the information about the</span>
+<span class="sd">        AlleleResponseAccumulation object variant.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="VariantAccumulator.accumulate"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator.accumulate">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call method for the accumulation factory method to accumulate information</span>
+<span class="sd">        about the AlleleResponseAccumulation object variant.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VariantAccumulator25"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator25">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator25</span><span class="p">(</span><span class="n">VariantAccumulator</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 25: accumulates information about existence,</span>
+<span class="sd">    frequency count and sample count.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator25.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator25.accumulate_variant">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 25 (=public).</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator25</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span>
+        <span class="n">allele_response</span><span class="o">.</span><span class="n">exists</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">get_variant_sample_frequency_count</span><span class="p">()</span>
+        <span class="n">allele_response</span><span class="o">.</span><span class="n">sample_count</span> <span class="o">+=</span> <span class="n">counts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">allele_response</span><span class="o">.</span><span class="n">frequency_count</span> <span class="o">+=</span> <span class="n">counts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">VariantAccumulator20Internal</span><span class="p">(</span><span class="n">VariantAccumulator25</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 20: accumulates information about existence,</span>
+<span class="sd">    frequency count, sample count and variantCount&gt;10.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 20 which changes the variantCount&gt;10.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator20Internal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">variant_count</span> <span class="o">+</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">internal_variant_count</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">variant_count_greater_ten</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="VariantAccumulator20"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator20">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator20</span><span class="p">(</span><span class="n">VariantAccumulator20Internal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 20: accumulates information about existence,</span>
+<span class="sd">    frequency count, sample count, internal variant count and variantCount&gt;10.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator20.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator20.accumulate_variant">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 20 which changes the internal variant count.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allele_response</span><span class="o">.</span><span class="n">internal_variant_count</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">get_variant_sample_frequency_count</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator20</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VariantAccumulator15"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator15">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator15</span><span class="p">(</span><span class="n">VariantAccumulator20Internal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 15: accumulates information about existence,</span>
+<span class="sd">    frequency count, sample count, allele count and variantCount&gt;10.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator15.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator15.accumulate_variant">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 15 which changes the variant count.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">allele_response</span><span class="o">.</span><span class="n">variant_count</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">get_variant_sample_frequency_count</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator15</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VariantAccumulator10"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator10">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator10</span><span class="p">(</span><span class="n">VariantAccumulator15</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 10: accumulates information about existence,</span>
+<span class="sd">    frequency count, sample count, variantCount&gt;10, allele count and coarse phenotype.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator10.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator10.accumulate_variant">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 10 which changes the coarse phenotype.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator10</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">Phenotype</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">case</span><span class="o">=</span><span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">case</span><span class="p">):</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">coarse_phenotype</span> <span class="o">=</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">coarse_phenotype</span><span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">get_coarse_phenotype</span><span class="p">()</span>
+            <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="VariantAccumulator5"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator5">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator5</span><span class="p">(</span><span class="n">VariantAccumulator15</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 5: accumulates information about existence,</span>
+<span class="sd">    frequency count, sample count, variantCount&gt;10, allele count and phenotype.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator5.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator5.accumulate_variant">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 5 which changes the phenotype.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator5</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">Phenotype</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">case</span><span class="o">=</span><span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">case</span><span class="p">):</span>
+            <span class="n">allele_response</span><span class="o">.</span><span class="n">phenotype</span> <span class="o">=</span> <span class="n">allele_response</span><span class="o">.</span><span class="n">phenotype</span><span class="o">.</span><span class="n">union</span><span class="p">({</span><span class="n">p</span><span class="o">.</span><span class="n">phenotype</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="VariantAccumulator0"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator0">[docs]</a><span class="k">class</span> <span class="nc">VariantAccumulator0</span><span class="p">(</span><span class="n">VariantAccumulator5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Accumulator class for visibility level 0: accumulates information about existence,</span>
+<span class="sd">    frequency count, sample count, variantCount&gt;10, allele count, phenotype and case index.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="VariantAccumulator0.accumulate_variant"><a class="viewcode-back" href="../../variant_accumulation.html#beacon.variant_accumulation.VariantAccumulator0.accumulate_variant">[docs]</a>    <span class="k">def</span> <span class="nf">accumulate_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allele_response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulates the information about the AlleleResponseAccumulation object variant</span>
+<span class="sd">        for visibility level 0 which changes the case index.</span>
+
+<span class="sd">        :param allele_response: An AlleleResponseAccumulation object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VariantAccumulator0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">accumulate_variant</span><span class="p">(</span><span class="n">allele_response</span><span class="p">)</span>
+        <span class="c1"># get case identifier</span>
+        <span class="n">allele_response</span><span class="o">.</span><span class="n">case_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">allele_response</span><span class="o">.</span><span class="n">variant</span><span class="o">.</span><span class="n">case</span><span class="o">.</span><span class="n">index</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

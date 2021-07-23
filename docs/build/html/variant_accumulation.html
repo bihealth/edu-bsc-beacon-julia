@@ -1,0 +1,416 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Variant Accumulation &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Views" href="views.html" />
+    <link rel="prev" title="Models" href="models.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installations and First Steps</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="beacon.html">Beacon</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="analyse_log_entries.html">Analyse Log Entries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beacon_schemas.html">Beacon Schemas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Variant Accumulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator">beacon.variant_accumulation.VariantAccumulator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator25">beacon.variant_accumulation.VariantAccumulator25</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator20">beacon.variant_accumulation.VariantAccumulator20</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator15">beacon.variant_accumulation.VariantAccumulator15</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator10">beacon.variant_accumulation.VariantAccumulator10</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator5">beacon.variant_accumulation.VariantAccumulator5</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator0">beacon.variant_accumulation.VariantAccumulator0</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="views.html">Views</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="beacon.html">Beacon</a> &raquo;</li>
+        
+      <li>Variant Accumulation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/variant_accumulation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="variant-accumulation">
+<h1><a class="toc-backref" href="#id1">Variant Accumulation</a><a class="headerlink" href="#variant-accumulation" title="Permalink to this headline">¶</a></h1>
+<p>Classes to accumulate the variant and case information for a query request.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#variant-accumulation" id="id1">Variant Accumulation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator" id="id2">beacon.variant_accumulation.VariantAccumulator</a></p></li>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator25" id="id3">beacon.variant_accumulation.VariantAccumulator25</a></p></li>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator20" id="id4">beacon.variant_accumulation.VariantAccumulator20</a></p></li>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator15" id="id5">beacon.variant_accumulation.VariantAccumulator15</a></p></li>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator10" id="id6">beacon.variant_accumulation.VariantAccumulator10</a></p></li>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator5" id="id7">beacon.variant_accumulation.VariantAccumulator5</a></p></li>
+<li><p><a class="reference internal" href="#beacon-variant-accumulation-variantaccumulator0" id="id8">beacon.variant_accumulation.VariantAccumulator0</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="beacon-variant-accumulation-variantaccumulator">
+<h2><a class="toc-backref" href="#id2">beacon.variant_accumulation.VariantAccumulator</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>The accumulator class declares the factory method accumulate_variant.
+The accumulator’s subclasses provide the implementation of this method.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator.accumulate">
+<span class="sig-name descname"><span class="pre">accumulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator.accumulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator.accumulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call method for the accumulation factory method to accumulate information
+about the AlleleResponseAccumulation object variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator.accumulate_variant">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method for the accumulation the information about the
+AlleleResponseAccumulation object variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-variant-accumulation-variantaccumulator25">
+<h2><a class="toc-backref" href="#id3">beacon.variant_accumulation.VariantAccumulator25</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator25" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator25">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator25</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator25"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator25" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulator class for visibility level 25: accumulates information about existence,
+frequency count and sample count.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator25.accumulate_variant">
+<span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator25.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator25.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulates the information about the AlleleResponseAccumulation object variant
+for visibility level 25 (=public).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-variant-accumulation-variantaccumulator20">
+<h2><a class="toc-backref" href="#id4">beacon.variant_accumulation.VariantAccumulator20</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator20" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator20">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator20</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator20"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator20" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulator class for visibility level 20: accumulates information about existence,
+frequency count, sample count, internal variant count and variantCount&gt;10.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator20.accumulate_variant">
+<span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator20.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator20.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulates the information about the AlleleResponseAccumulation object variant
+for visibility level 20 which changes the internal variant count.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-variant-accumulation-variantaccumulator15">
+<h2><a class="toc-backref" href="#id5">beacon.variant_accumulation.VariantAccumulator15</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator15" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator15">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator15</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator15"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator15" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulator class for visibility level 15: accumulates information about existence,
+frequency count, sample count, allele count and variantCount&gt;10.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator15.accumulate_variant">
+<span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator15.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator15.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulates the information about the AlleleResponseAccumulation object variant
+for visibility level 15 which changes the variant count.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-variant-accumulation-variantaccumulator10">
+<h2><a class="toc-backref" href="#id6">beacon.variant_accumulation.VariantAccumulator10</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator10" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator10">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator10</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator10"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator10" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulator class for visibility level 10: accumulates information about existence,
+frequency count, sample count, variantCount&gt;10, allele count and coarse phenotype.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator10.accumulate_variant">
+<span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator10.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator10.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulates the information about the AlleleResponseAccumulation object variant
+for visibility level 10 which changes the coarse phenotype.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-variant-accumulation-variantaccumulator5">
+<h2><a class="toc-backref" href="#id7">beacon.variant_accumulation.VariantAccumulator5</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator5" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator5">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator5</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulator class for visibility level 5: accumulates information about existence,
+frequency count, sample count, variantCount&gt;10, allele count and phenotype.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator5.accumulate_variant">
+<span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator5.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator5.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulates the information about the AlleleResponseAccumulation object variant
+for visibility level 5 which changes the phenotype.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-variant-accumulation-variantaccumulator0">
+<h2><a class="toc-backref" href="#id8">beacon.variant_accumulation.VariantAccumulator0</a><a class="headerlink" href="#beacon-variant-accumulation-variantaccumulator0" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator0">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.variant_accumulation.</span></span><span class="sig-name descname"><span class="pre">VariantAccumulator0</span></span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulator class for visibility level 0: accumulates information about existence,
+frequency count, sample count, variantCount&gt;10, allele count, phenotype and case index.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.variant_accumulation.VariantAccumulator0.accumulate_variant">
+<span class="sig-name descname"><span class="pre">accumulate_variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allele_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/variant_accumulation.html#VariantAccumulator0.accumulate_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.variant_accumulation.VariantAccumulator0.accumulate_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accumulates the information about the AlleleResponseAccumulation object variant
+for visibility level 0 which changes the case index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>allele_response</strong> – An AlleleResponseAccumulation object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="views.html" class="btn btn-neutral float-right" title="Views" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="models.html" class="btn btn-neutral float-left" title="Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

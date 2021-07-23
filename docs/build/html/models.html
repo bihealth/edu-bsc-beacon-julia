@@ -1,0 +1,770 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Models &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Variant Accumulation" href="variant_accumulation.html" />
+    <link rel="prev" title="Beacon Schemas" href="beacon_schemas.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installations and First Steps</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="beacon.html">Beacon</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="analyse_log_entries.html">Analyse Log Entries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="beacon_schemas.html">Beacon Schemas</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-project">beacon.models.Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-case">beacon.models.Case</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-variant">beacon.models.Variant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-phenotype">beacon.models.Phenotype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-consortium">beacon.models.Consortium</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-remotesite">beacon.models.RemoteSite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-logentry">beacon.models.LogEntry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-metadatabeacon">beacon.models.MetadataBeacon</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-metadatabeaconorganization">beacon.models.MetadataBeaconOrganization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-models-metadatabeacondataset">beacon.models.MetadataBeaconDataset</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="variant_accumulation.html">Variant Accumulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html">Views</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="beacon.html">Beacon</a> &raquo;</li>
+        
+      <li>Models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/models.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="models">
+<h1><a class="toc-backref" href="#id1">Models</a><a class="headerlink" href="#models" title="Permalink to this headline">¶</a></h1>
+<p>Classes presenting the database models.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#models" id="id1">Models</a></p>
+<ul>
+<li><p><a class="reference internal" href="#beacon-models-project" id="id2">beacon.models.Project</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-case" id="id3">beacon.models.Case</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-variant" id="id4">beacon.models.Variant</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-phenotype" id="id5">beacon.models.Phenotype</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-consortium" id="id6">beacon.models.Consortium</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-remotesite" id="id7">beacon.models.RemoteSite</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-logentry" id="id8">beacon.models.LogEntry</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-metadatabeacon" id="id9">beacon.models.MetadataBeacon</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-metadatabeaconorganization" id="id10">beacon.models.MetadataBeaconOrganization</a></p></li>
+<li><p><a class="reference internal" href="#beacon-models-metadatabeacondataset" id="id11">beacon.models.MetadataBeaconDataset</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="beacon-models-project">
+<h2><a class="toc-backref" href="#id2">beacon.models.Project</a><a class="headerlink" href="#beacon-models-project" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.Project">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">Project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>A SODAR project.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Project.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.Project.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Project.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.Project.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Project.title">
+<span class="sig-name descname"><span class="pre">title</span></span><a class="headerlink" href="#beacon.models.Project.title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project title</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-case">
+<h2><a class="toc-backref" href="#id3">beacon.models.Case</a><a class="headerlink" href="#beacon-models-case" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.Case">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">Case</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Case"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Case" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Case as used in VarFish or SODAR.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Case.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.Case.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Case.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.Case.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Case.index">
+<span class="sig-name descname"><span class="pre">index</span></span><a class="headerlink" href="#beacon.models.Case.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index of this case</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Case.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#beacon.models.Case.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of this case</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Case.pedigree">
+<span class="sig-name descname"><span class="pre">pedigree</span></span><a class="headerlink" href="#beacon.models.Case.pedigree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pedigree containing information about the case family</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Case.project">
+<span class="sig-name descname"><span class="pre">project</span></span><a class="headerlink" href="#beacon.models.Case.project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project containing this case</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-variant">
+<h2><a class="toc-backref" href="#id4">beacon.models.Variant</a><a class="headerlink" href="#beacon-models-variant" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.Variant">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">Variant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>A VarFish variant.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Variant.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.Variant.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Variant.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.Variant.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.alternative">
+<span class="sig-name descname"><span class="pre">alternative</span></span><a class="headerlink" href="#beacon.models.Variant.alternative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant coordinates, the alternate base</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.case">
+<span class="sig-name descname"><span class="pre">case</span></span><a class="headerlink" href="#beacon.models.Variant.case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Link to Case ID</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.chromosome">
+<span class="sig-name descname"><span class="pre">chromosome</span></span><a class="headerlink" href="#beacon.models.Variant.chromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant coordinates, the reference chromosome</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.end">
+<span class="sig-name descname"><span class="pre">end</span></span><a class="headerlink" href="#beacon.models.Variant.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant coordinates, the end position</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.genotype">
+<span class="sig-name descname"><span class="pre">genotype</span></span><a class="headerlink" href="#beacon.models.Variant.genotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Genotype information as JSONB</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.models.Variant.get_variant_sample_frequency_count">
+<span class="sig-name descname"><span class="pre">get_variant_sample_frequency_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Variant.get_variant_sample_frequency_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Variant.get_variant_sample_frequency_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts the alleles, samples and total number of alleles for the frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>integer of number of alleles, samples and total numbers of alleles</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.reference">
+<span class="sig-name descname"><span class="pre">reference</span></span><a class="headerlink" href="#beacon.models.Variant.reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant coordinates, the reference base</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.release">
+<span class="sig-name descname"><span class="pre">release</span></span><a class="headerlink" href="#beacon.models.Variant.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Genome build</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Variant.start">
+<span class="sig-name descname"><span class="pre">start</span></span><a class="headerlink" href="#beacon.models.Variant.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant coordinates, the 1-based start position</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-phenotype">
+<h2><a class="toc-backref" href="#id5">beacon.models.Phenotype</a><a class="headerlink" href="#beacon-models-phenotype" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.Phenotype">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">Phenotype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Phenotype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Phenotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Phenotype of a case.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Phenotype.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.Phenotype.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Phenotype.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.Phenotype.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Phenotype.case">
+<span class="sig-name descname"><span class="pre">case</span></span><a class="headerlink" href="#beacon.models.Phenotype.case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Link to case ID</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.models.Phenotype.get_coarse_phenotype">
+<span class="sig-name descname"><span class="pre">get_coarse_phenotype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Phenotype.get_coarse_phenotype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Phenotype.get_coarse_phenotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a coarse term of the phenotype from the Human Phenotype Ontology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Set of phenotype terms</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Phenotype.phenotype">
+<span class="sig-name descname"><span class="pre">phenotype</span></span><a class="headerlink" href="#beacon.models.Phenotype.phenotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Phenotype information using HPO</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-consortium">
+<h2><a class="toc-backref" href="#id6">beacon.models.Consortium</a><a class="headerlink" href="#beacon-models-consortium" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.Consortium">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">Consortium</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#Consortium"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.Consortium" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Consortium related to certain Remote Sites and Projects.
+Indicates the visibility level of the project variant data which is requested.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Consortium.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.Consortium.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.Consortium.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.Consortium.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Consortium.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#beacon.models.Consortium.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the consortium</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Consortium.projects">
+<span class="sig-name descname"><span class="pre">projects</span></span><a class="headerlink" href="#beacon.models.Consortium.projects" title="Permalink to this definition">¶</a></dt>
+<dd><p>The project containing this consortium</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.Consortium.visibility_level">
+<span class="sig-name descname"><span class="pre">visibility_level</span></span><a class="headerlink" href="#beacon.models.Consortium.visibility_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Level of visibility of the variant data</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-remotesite">
+<h2><a class="toc-backref" href="#id7">beacon.models.RemoteSite</a><a class="headerlink" href="#beacon-models-remotesite" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">RemoteSite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#RemoteSite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.RemoteSite" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Remote Site for which the client needs a key to log into.
+The access of the Remote Site can be regulated by a given limit.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.RemoteSite.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.RemoteSite.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite.access_limit">
+<span class="sig-name descname"><span class="pre">access_limit</span></span><a class="headerlink" href="#beacon.models.RemoteSite.access_limit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access limit per day</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite.consortia">
+<span class="sig-name descname"><span class="pre">consortia</span></span><a class="headerlink" href="#beacon.models.RemoteSite.consortia" title="Permalink to this definition">¶</a></dt>
+<dd><p>The consortium containing this remote site</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#beacon.models.RemoteSite.key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authentication key</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.RemoteSite.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#beacon.models.RemoteSite.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the remote site</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-logentry">
+<h2><a class="toc-backref" href="#id8">beacon.models.LogEntry</a><a class="headerlink" href="#beacon-models-logentry" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.LogEntry">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">LogEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#LogEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.LogEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Each requests of the Beacon are logged with a LogEntry object.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.LogEntry.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.LogEntry.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.alternative">
+<span class="sig-name descname"><span class="pre">alternative</span></span><a class="headerlink" href="#beacon.models.LogEntry.alternative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested variant coordinates, the alternate base</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.cases">
+<span class="sig-name descname"><span class="pre">cases</span></span><a class="headerlink" href="#beacon.models.LogEntry.cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queried cases to which the variant data belongs to</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.chromosome">
+<span class="sig-name descname"><span class="pre">chromosome</span></span><a class="headerlink" href="#beacon.models.LogEntry.chromosome" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested variant coordinates, the reference chromosome</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.date_time">
+<span class="sig-name descname"><span class="pre">date_time</span></span><a class="headerlink" href="#beacon.models.LogEntry.date_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Date and time of request</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.end">
+<span class="sig-name descname"><span class="pre">end</span></span><a class="headerlink" href="#beacon.models.LogEntry.end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested variant coordinates, the end position</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.endpoint">
+<span class="sig-name descname"><span class="pre">endpoint</span></span><a class="headerlink" href="#beacon.models.LogEntry.endpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested endpoint</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.ip_address">
+<span class="sig-name descname"><span class="pre">ip_address</span></span><a class="headerlink" href="#beacon.models.LogEntry.ip_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>IP address client</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.method">
+<span class="sig-name descname"><span class="pre">method</span></span><a class="headerlink" href="#beacon.models.LogEntry.method" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request method</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.reference">
+<span class="sig-name descname"><span class="pre">reference</span></span><a class="headerlink" href="#beacon.models.LogEntry.reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested variant coordinates, the reference base</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.release">
+<span class="sig-name descname"><span class="pre">release</span></span><a class="headerlink" href="#beacon.models.LogEntry.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested genome build</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.remote_site">
+<span class="sig-name descname"><span class="pre">remote_site</span></span><a class="headerlink" href="#beacon.models.LogEntry.remote_site" title="Permalink to this definition">¶</a></dt>
+<dd><p>User (=RemoteSite)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.response_size">
+<span class="sig-name descname"><span class="pre">response_size</span></span><a class="headerlink" href="#beacon.models.LogEntry.response_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Size response object in bytes</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.server_protocol">
+<span class="sig-name descname"><span class="pre">server_protocol</span></span><a class="headerlink" href="#beacon.models.LogEntry.server_protocol" title="Permalink to this definition">¶</a></dt>
+<dd><p>server protocol</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.start">
+<span class="sig-name descname"><span class="pre">start</span></span><a class="headerlink" href="#beacon.models.LogEntry.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requested variant coordinates, the 0-based start position</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.status_code">
+<span class="sig-name descname"><span class="pre">status_code</span></span><a class="headerlink" href="#beacon.models.LogEntry.status_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Status code</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.LogEntry.user_identifier">
+<span class="sig-name descname"><span class="pre">user_identifier</span></span><a class="headerlink" href="#beacon.models.LogEntry.user_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>User identifier passed by X-Remote-Site header</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-metadatabeacon">
+<h2><a class="toc-backref" href="#id9">beacon.models.MetadataBeacon</a><a class="headerlink" href="#beacon-models-metadatabeacon" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeacon">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">MetadataBeacon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#MetadataBeacon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.MetadataBeacon" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata of the beacon.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeacon.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.MetadataBeacon.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeacon.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.MetadataBeacon.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeacon.api_version">
+<span class="sig-name descname"><span class="pre">api_version</span></span><a class="headerlink" href="#beacon.models.MetadataBeacon.api_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version of the API provided by the beacon</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeacon.beacon_id">
+<span class="sig-name descname"><span class="pre">beacon_id</span></span><a class="headerlink" href="#beacon.models.MetadataBeacon.beacon_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier of the beacon, use reverse domain name notation</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeacon.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#beacon.models.MetadataBeacon.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Human readable name of the beacon</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-metadatabeaconorganization">
+<h2><a class="toc-backref" href="#id10">beacon.models.MetadataBeaconOrganization</a><a class="headerlink" href="#beacon-models-metadatabeaconorganization" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconOrganization">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">MetadataBeaconOrganization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#MetadataBeaconOrganization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.MetadataBeaconOrganization" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata of the organization which hosts the beacon.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconOrganization.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconOrganization.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconOrganization.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconOrganization.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconOrganization.beacon_org_id">
+<span class="sig-name descname"><span class="pre">beacon_org_id</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconOrganization.beacon_org_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier of the organization</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconOrganization.metadata_beacon">
+<span class="sig-name descname"><span class="pre">metadata_beacon</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconOrganization.metadata_beacon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beacon ID which this organization hosts</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconOrganization.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconOrganization.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the organization</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-models-metadatabeacondataset">
+<h2><a class="toc-backref" href="#id11">beacon.models.MetadataBeaconDataset</a><a class="headerlink" href="#beacon-models-metadatabeacondataset" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.models.</span></span><span class="sig-name descname"><span class="pre">MetadataBeaconDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/models.html#MetadataBeaconDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.models.MetadataBeaconDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>The metadata of the datasets which are contained in the beacon database.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.DoesNotExist">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span> </em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.assembly_id">
+<span class="sig-name descname"><span class="pre">assembly_id</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.assembly_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assembly identifier</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.beacon_data_id">
+<span class="sig-name descname"><span class="pre">beacon_data_id</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.beacon_data_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier of the dataset</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.create_date_time">
+<span class="sig-name descname"><span class="pre">create_date_time</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.create_date_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The time the dataset was created (ISO 8601 format)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.metadata_beacon">
+<span class="sig-name descname"><span class="pre">metadata_beacon</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.metadata_beacon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beacon ID which this organisation hosts</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of the dataset</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="beacon.models.MetadataBeaconDataset.update_date_time">
+<span class="sig-name descname"><span class="pre">update_date_time</span></span><a class="headerlink" href="#beacon.models.MetadataBeaconDataset.update_date_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The time the dataset was updated in (ISO 8601 format)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="variant_accumulation.html" class="btn btn-neutral float-right" title="Variant Accumulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="beacon_schemas.html" class="btn btn-neutral float-left" title="Beacon Schemas" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,982 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>beacon.management.commands.analyse_log_entries &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installations and First Steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../beacon.html">Beacon</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>beacon.management.commands.analyse_log_entries</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for beacon.management.commands.analyse_log_entries</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span>
+<span class="kn">from</span> <span class="nn">beacon.models</span> <span class="kn">import</span> <span class="n">LogEntry</span><span class="p">,</span> <span class="n">RemoteSite</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+
+<span class="c1">#: Suppress warning for too many figures opened for testing</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;figure.max_open_warning&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+<span class="n">font</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;family&#39;</span><span class="p">:{</span><span class="s1">&#39;serif&#39;</span><span class="p">:[</span><span class="s1">&#39;Times&#39;</span><span class="p">]},</span>
+        <span class="s1">&#39;size&#39;</span>   <span class="p">:</span> <span class="mi">14</span><span class="p">}</span>
+
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;font&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">font</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../../../analyse_log_entries.html#beacon.management.commands.analyse_log_entries.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom commands for the admin.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;Creates a statistical overview about the logged requests&quot;</span>
+
+<div class="viewcode-block" id="Command.add_arguments"><a class="viewcode-back" href="../../../../analyse_log_entries.html#beacon.management.commands.analyse_log_entries.Command.add_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Defines the flags given to the command.</span>
+
+<span class="sd">        :param parser: parser object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Given path to directory where to save the data&quot;</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--as_csv&quot;</span><span class="p">,</span>
+            <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Saves data as a csv file.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+            <span class="s2">&quot;--time_period&quot;</span><span class="p">,</span>
+            <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The time period to look at like &#39;2021-05-03&#39; &#39;2021-10-01&#39;.&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Command.handle"><a class="viewcode-back" href="../../../../analyse_log_entries.html#beacon.management.commands.analyse_log_entries.Command.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a statistical overview of the logged requests.</span>
+
+<span class="sd">        :param args:</span>
+<span class="sd">        :param options: Flags for optionally create a csv file &quot;--as_csv&quot;, save plots in given directory &quot;--path&quot; and define the to be observed time period &quot;--time_period &#39;2021-10-01&#39; &#39;2022-10-01&#39;&quot;</span>
+<span class="sd">        :return: A stdout string if successful otherwise returns an error or warning.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if argument given time period, filter for given time period</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;time_period&quot;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">time_start</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;time_period&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">time_end</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;time_period&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">utc</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="c1"># checks if input is invalid</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">time_start</span> <span class="o">&gt;</span> <span class="n">time_end</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">time_start</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">time_end</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">ERROR</span><span class="p">(</span>
+                        <span class="s2">&quot;ERROR: Your input format of the date_time is invalid.&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="c1"># creates dataframe for given time period</span>
+            <span class="n">log_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_data_frame</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">time_start</span><span class="p">,</span> <span class="n">time_end</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># creates dataframe for all logged entries</span>
+            <span class="n">log_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_data_frame</span><span class="p">()</span>
+        <span class="c1"># checks whether dataframe is not empty</span>
+        <span class="k">if</span> <span class="n">log_data</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                    <span class="s2">&quot;WARNING: No data available for the given time period.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="c1"># sets date time as an index for dataframe</span>
+        <span class="n">log_data_indexed</span> <span class="o">=</span> <span class="n">log_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date_time&quot;</span><span class="p">)</span>
+        <span class="c1"># sets style used for plotting</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;seaborn-bright&quot;</span><span class="p">)</span>
+        <span class="c1"># checks whether data is just from one month</span>
+        <span class="c1"># indicator for used daily data points in plots</span>
+        <span class="n">month_day</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">log_data_indexed</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">month_day</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># figures and plot names for saving them later</span>
+        <span class="n">figures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">file_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">fig2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">log_data_indexed</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># making plots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plot_endpoint_per_time</span><span class="p">(</span>
+            <span class="n">log_data_indexed</span><span class="p">,</span> <span class="n">fig1</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">month_day</span>
+        <span class="p">)</span>
+        <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig1</span><span class="p">)</span>
+        <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;requests_per_endpoint.pdf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plot_status_codes_per_time</span><span class="p">(</span>
+            <span class="n">log_data_indexed</span><span class="p">,</span> <span class="n">fig2</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">month_day</span>
+        <span class="p">)</span>
+        <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig2</span><span class="p">)</span>
+        <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;status_codes_requests.pdf&quot;</span><span class="p">)</span>
+        <span class="n">log_data_query</span> <span class="o">=</span> <span class="n">log_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">log_data</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">==</span> <span class="s2">&quot;query&quot;</span><span class="p">]</span>
+        <span class="c1"># checks whether there are data points with query as endpoint</span>
+        <span class="k">if</span> <span class="n">log_data_query</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                    <span class="s2">&quot;WARNING: No data available for plotting information about query endpoint.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># making plots</span>
+            <span class="n">log_data_query</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_requests_per_remote_site</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">[</span><span class="s2">&quot;remote site&quot;</span><span class="p">],</span> <span class="n">fig3</span><span class="p">,</span> <span class="n">ax3</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span>
+            <span class="p">)</span>
+            <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig3</span><span class="p">)</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;requests_per_remote_site.pdf&quot;</span><span class="p">)</span>
+            <span class="n">fig4</span><span class="p">,</span> <span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_remote_site_per_variant_container</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">[[</span><span class="s2">&quot;remote site&quot;</span><span class="p">,</span> <span class="s2">&quot;case&quot;</span><span class="p">]],</span>
+                <span class="n">fig4</span><span class="p">,</span>
+                <span class="n">ax4</span><span class="p">,</span>
+                <span class="s2">&quot;case&quot;</span><span class="p">,</span>
+                <span class="n">figures</span><span class="p">,</span>
+                <span class="n">file_names</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fig5</span><span class="p">,</span> <span class="n">ax5</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_remote_site_per_variant_container</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">[[</span><span class="s2">&quot;remote site&quot;</span><span class="p">,</span> <span class="s2">&quot;project&quot;</span><span class="p">]],</span>
+                <span class="n">fig5</span><span class="p">,</span>
+                <span class="n">ax5</span><span class="p">,</span>
+                <span class="s2">&quot;project&quot;</span><span class="p">,</span>
+                <span class="n">figures</span><span class="p">,</span>
+                <span class="n">file_names</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fig6</span><span class="p">,</span> <span class="n">ax6</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_remote_site_user_per_variant_container</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">[[</span><span class="s2">&quot;remote site user&quot;</span><span class="p">,</span> <span class="s2">&quot;case&quot;</span><span class="p">,</span> <span class="s2">&quot;remote site&quot;</span><span class="p">]],</span>
+                <span class="n">fig6</span><span class="p">,</span>
+                <span class="n">ax6</span><span class="p">,</span>
+                <span class="s2">&quot;case&quot;</span><span class="p">,</span>
+                <span class="n">figures</span><span class="p">,</span>
+                <span class="n">file_names</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fig7</span><span class="p">,</span> <span class="n">ax7</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_remote_site_user_per_variant_container</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">[[</span><span class="s2">&quot;remote site user&quot;</span><span class="p">,</span> <span class="s2">&quot;project&quot;</span><span class="p">,</span> <span class="s2">&quot;remote site&quot;</span><span class="p">]],</span>
+                <span class="n">fig7</span><span class="p">,</span>
+                <span class="n">ax7</span><span class="p">,</span>
+                <span class="s2">&quot;project&quot;</span><span class="p">,</span>
+                <span class="n">figures</span><span class="p">,</span>
+                <span class="n">file_names</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fig8</span><span class="p">,</span> <span class="n">ax8</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_access_limit_per_remote_site</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">,</span> <span class="n">fig8</span><span class="p">,</span> <span class="n">ax8</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span>
+            <span class="p">)</span>
+            <span class="n">fig9</span><span class="p">,</span> <span class="n">ax9</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_plot_table_top_requested_variants</span><span class="p">(</span>
+                <span class="n">log_data_query</span><span class="p">[</span><span class="n">log_data_query</span><span class="p">[</span><span class="s2">&quot;status code&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">400</span><span class="p">][</span>
+                    <span class="p">[</span>
+                        <span class="s2">&quot;reference&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;chromosome&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;start&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;end&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;release&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;alternative&quot;</span><span class="p">,</span>
+                    <span class="p">]</span>
+                <span class="p">],</span>
+                <span class="n">fig9</span><span class="p">,</span>
+                <span class="n">ax9</span><span class="p">,</span>
+                <span class="n">figures</span><span class="p">,</span>
+                <span class="n">file_names</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># checks if &#39;--path&#39; argument was passed</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span>
+            <span class="c1"># trying to save plot files</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">figure</span><span class="p">,</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">):</span>
+                    <span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+                <span class="c1"># if argument &#39;--as_csv&#39; was passed save data as csv file</span>
+                <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;as_csv&quot;</span><span class="p">]:</span>
+                    <span class="n">log_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;log_entry_data.csv&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">ERROR</span><span class="p">(</span>
+                        <span class="s2">&quot;ERROR: Couldn&#39;t find the directory or permission for the directory is missing: </span><span class="si">%s</span><span class="s2">&quot;</span>
+                        <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># shows all the plots</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="c1"># if argument &#39;--as_csv&#39; was passed save csv file in current directory</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;as_csv&quot;</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">log_data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;log_entry_data.csv&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                            <span class="s2">&quot;WARNING: The log_entry_data.csv file was saved in the current working directory.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">ERROR</span><span class="p">(</span>
+                            <span class="s2">&quot;ERROR: You have no writing permission for the current directory.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">(</span>
+                <span class="s2">&quot;A statistical overview of the logged requests was created successfully.&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+    <span class="c1"># logs = pandas.DataFrame(LogEntry.objects.all().values())</span>
+    <span class="k">def</span> <span class="nf">_create_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_period</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">time_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a pandas DataFrame object by querying the database for the the LogEntry entries</span>
+<span class="sd">        and filters entries optionally for a given time period.</span>
+
+<span class="sd">        :param time_period: bool indicating if time period is given</span>
+<span class="sd">        :param time_start: a pandas datetime object</span>
+<span class="sd">        :param time_end: a pandas datetime object</span>
+<span class="sd">        :return: a pandas DataFrame object containing the LogEntry data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">methods</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">endpoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">user_identifiers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ip_addresses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">remote_sites_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">date_times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">status_codes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">response_sizes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">references</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">alternatives</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">chromosomes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">ends</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">releases</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">server_protocols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cases</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">projects</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># in case time period is given filters LogEntry entries</span>
+        <span class="k">if</span> <span class="n">time_period</span><span class="p">:</span>
+            <span class="n">log_entries</span> <span class="o">=</span> <span class="n">LogEntry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">date_time__gte</span><span class="o">=</span><span class="n">time_start</span><span class="p">,</span> <span class="n">date_time__lte</span><span class="o">=</span><span class="n">time_end</span>
+            <span class="p">)</span>
+        <span class="c1"># query database for all LogEntry entries</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_entries</span> <span class="o">=</span> <span class="n">LogEntry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="c1"># read data from &#39;log_entries&#39; QuerySet</span>
+        <span class="k">for</span> <span class="n">log</span> <span class="ow">in</span> <span class="n">log_entries</span><span class="p">:</span>
+            <span class="n">cases_query_set</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">cases</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="n">cases</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cases_query_set</span><span class="p">])</span>
+            <span class="n">projects</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">title</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cases_query_set</span><span class="p">])</span>
+            <span class="n">methods</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">method</span><span class="p">)</span>
+            <span class="n">endpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">endpoint</span><span class="p">)</span>
+            <span class="n">ip_addresses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">ip_address</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">log</span><span class="o">.</span><span class="n">remote_site</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">remote_sites_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">remote_sites_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">RemoteSite</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">log</span><span class="o">.</span><span class="n">remote_site</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+                <span class="p">)</span>
+            <span class="n">user_identifiers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> - </span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">remote_sites_names</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">remote_sites_names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">log</span><span class="o">.</span><span class="n">user_identifier</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">date_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">date_time</span><span class="p">)</span>
+            <span class="n">status_codes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="n">response_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">response_size</span><span class="p">)</span>
+            <span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">reference</span><span class="p">)</span>
+            <span class="n">alternatives</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">alternative</span><span class="p">)</span>
+            <span class="n">chromosomes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">chromosome</span><span class="p">)</span>
+            <span class="n">starts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">ends</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+            <span class="n">releases</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">release</span><span class="p">)</span>
+            <span class="n">server_protocols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="o">.</span><span class="n">server_protocol</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="n">methods</span><span class="p">,</span>
+                <span class="s2">&quot;endpoint&quot;</span><span class="p">:</span> <span class="n">endpoints</span><span class="p">,</span>
+                <span class="s2">&quot;remote site user&quot;</span><span class="p">:</span> <span class="n">user_identifiers</span><span class="p">,</span>
+                <span class="s2">&quot;ip_address&quot;</span><span class="p">:</span> <span class="n">ip_addresses</span><span class="p">,</span>
+                <span class="s2">&quot;remote site&quot;</span><span class="p">:</span> <span class="n">remote_sites_names</span><span class="p">,</span>
+                <span class="c1"># time zone removed</span>
+                <span class="s2">&quot;date_time&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">date_times</span><span class="p">],</span>
+                <span class="s2">&quot;status code&quot;</span><span class="p">:</span> <span class="n">status_codes</span><span class="p">,</span>
+                <span class="s2">&quot;response_size&quot;</span><span class="p">:</span> <span class="n">response_sizes</span><span class="p">,</span>
+                <span class="s2">&quot;reference&quot;</span><span class="p">:</span> <span class="n">references</span><span class="p">,</span>
+                <span class="s2">&quot;alternative&quot;</span><span class="p">:</span> <span class="n">alternatives</span><span class="p">,</span>
+                <span class="s2">&quot;chromosome&quot;</span><span class="p">:</span> <span class="n">chromosomes</span><span class="p">,</span>
+                <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">starts</span><span class="p">,</span>
+                <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">ends</span><span class="p">,</span>
+                <span class="s2">&quot;release&quot;</span><span class="p">:</span> <span class="n">releases</span><span class="p">,</span>
+                <span class="s2">&quot;server protocol&quot;</span><span class="p">:</span> <span class="n">server_protocols</span><span class="p">,</span>
+                <span class="s2">&quot;case&quot;</span><span class="p">:</span> <span class="n">cases</span><span class="p">,</span>
+                <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">projects</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_endpoint_per_time</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">month_day</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing information about the number of request per endpoint and</span>
+<span class="sd">        per time scaled per month or per year depending on the month_day input. Appends</span>
+<span class="sd">        the created plot to the figures and its name to file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        :param month_day: bool True if the data contains just data for one month, default is False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># creates new dataframe for plotting</span>
+        <span class="n">endpoints_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{})</span>
+        <span class="c1"># add column to dataframe for each endpoint</span>
+        <span class="k">for</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;endpoint&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="n">endpoints_df</span><span class="p">[</span><span class="n">endpoint</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;endpoint&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">endpoint</span><span class="p">]</span>
+        <span class="c1"># adds date_time as column</span>
+        <span class="n">endpoints_df</span><span class="p">[</span><span class="s2">&quot;date_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;date_time&quot;</span><span class="p">]</span>
+        <span class="c1"># set datetime index</span>
+        <span class="n">endpoints_df</span> <span class="o">=</span> <span class="n">endpoints_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date_time&quot;</span><span class="p">)</span>
+        <span class="c1"># if True uses daily data points for plotting</span>
+        <span class="k">if</span> <span class="n">month_day</span><span class="p">:</span>
+            <span class="n">endpoints_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">endpoints_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
+                    <span class="n">endpoints_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+                    <span class="n">endpoints_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="s2">&quot;.-&quot;</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time period (year, month, day)&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">endpoints_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">endpoints_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">endpoints_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="s2">&quot;.-&quot;</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time period (year, month)&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Number of requests per endpoint&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+        <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;requests_per_endpoint.pdf&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_status_codes_per_time</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">month_day</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing information about the number of request having a certain status</span>
+<span class="sd">        code per time scaled per month or per year depending on the month_day input. Appends</span>
+<span class="sd">        the created plot to the figures and its name to file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        :param month_day: bool True if the data contains just data for one month, default is False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># creates new dataframe for plotting</span>
+        <span class="n">status_codes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{})</span>
+        <span class="c1"># add column to dataframe for each status code</span>
+        <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;status code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="n">status_codes_df</span><span class="p">[</span><span class="n">status</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;status code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">status</span><span class="p">]</span>
+        <span class="c1"># adds date_time as column</span>
+        <span class="n">status_codes_df</span><span class="p">[</span><span class="s2">&quot;date_time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;date_time&quot;</span><span class="p">]</span>
+        <span class="c1"># set datetime index</span>
+        <span class="n">status_codes_df</span> <span class="o">=</span> <span class="n">status_codes_df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;date_time&quot;</span><span class="p">)</span>
+        <span class="c1"># if True uses daily data points for plotting</span>
+        <span class="k">if</span> <span class="n">month_day</span><span class="p">:</span>
+            <span class="n">status_codes_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">status_codes_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
+                    <span class="n">status_codes_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+                    <span class="n">status_codes_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="s2">&quot;.-&quot;</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time period (year, month, day)&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status_codes_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">status_codes_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">status_codes_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">month</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;line&quot;</span><span class="p">,</span>
+                <span class="n">style</span><span class="o">=</span><span class="s2">&quot;.-&quot;</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Time period (year, month)&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Number of status codes from requests&quot;</span><span class="p">)</span>
+        <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;status_codes_requests.pdf&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_requests_per_remote_site</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing information about the number of request per remote site.</span>
+<span class="sd">        Appends the created plot to the figures and its name to file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># counts requests per remote site</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+            <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Remote site&quot;</span>
+        <span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Number of requests per remote site&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+        <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+        <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;requests_per_remote_site.pdf&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_remote_site_per_variant_container</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">variant_container</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing information about the number of request</span>
+<span class="sd">        per variant container (either case or project), mayor requesting</span>
+<span class="sd">        remote site of each variant container and the proportion of it on</span>
+<span class="sd">        the number of request in percentage. Appends the created plot to</span>
+<span class="sd">        the figures and its name to file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param variant_container: string</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read in data</span>
+        <span class="n">remote_sites</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">variant_containers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">variant_container</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">var_container</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">variant_container</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">variant_containers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_container</span><span class="p">)</span>
+                <span class="n">remote_sites</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;remote site&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">case_project_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;remote site&quot;</span><span class="p">:</span> <span class="n">remote_sites</span><span class="p">,</span>
+                <span class="n">variant_container</span><span class="p">:</span> <span class="n">variant_containers</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">variant_containers</span><span class="p">:</span>
+            <span class="c1"># count data points per remote site</span>
+            <span class="n">table_count_remote_site</span> <span class="o">=</span> <span class="n">case_project_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">variant_container</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;remote site&quot;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;size&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># get maximum counted remote site and percentage</span>
+            <span class="n">max_remote_site</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span>
+                        <span class="n">table_count_remote_site</span><span class="p">[</span>
+                            <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">c</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span>
+            <span class="p">]</span>
+            <span class="n">max_percentage</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="nb">round</span><span class="p">(</span>
+                        <span class="n">table_count_remote_site</span><span class="p">[</span><span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">c</span><span class="p">]</span>
+                        <span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                        <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span>
+                            <span class="n">table_count_remote_site</span><span class="p">[</span>
+                                <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">c</span>
+                            <span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                        <span class="p">),</span>
+                        <span class="mi">2</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span>
+                <span class="p">],</span>
+                <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># get total counts</span>
+            <span class="n">total_call_counts</span> <span class="o">=</span> <span class="n">case_project_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">variant_container</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;size&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># create pivot table for plotting values</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;total_call_count&quot;</span><span class="p">:</span> <span class="n">total_call_counts</span><span class="p">,</span>
+                    <span class="s2">&quot;Maximal requesting identifier&quot;</span><span class="p">:</span> <span class="n">max_remote_site</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="c1"># sort values and plot top 15</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;total_call_count&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;Maximal requesting identifier&quot;</span><span class="p">,</span>
+                <span class="n">values</span><span class="o">=</span><span class="s2">&quot;total_call_count&quot;</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+                <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">variant_container</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">variant_container</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="c1"># add percentage per most often requesting identifier</span>
+            <span class="n">rects</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span>
+            <span class="k">for</span> <span class="n">rect</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">height</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">rects</span><span class="p">,</span>
+                <span class="p">[(</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">mp</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;%&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">mp</span> <span class="ow">in</span> <span class="n">max_percentage</span><span class="p">[:</span><span class="mi">15</span><span class="p">]],</span>
+                <span class="nb">sorted</span><span class="p">(</span><span class="n">total_call_counts</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="mi">15</span><span class="p">],</span>
+            <span class="p">):</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                    <span class="n">rect</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">rect</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="n">height</span><span class="p">,</span>
+                    <span class="n">label</span><span class="p">,</span>
+                    <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                    <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+                <span class="s2">&quot;Number of requests per </span><span class="si">%s</span><span class="s2"> and percentage of top remote sites&quot;</span>
+                <span class="o">%</span> <span class="n">variant_container</span>
+            <span class="p">)</span>
+            <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;requested_</span><span class="si">%s</span><span class="s2">s_per_remote_site.pdf&quot;</span> <span class="o">%</span> <span class="n">variant_container</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                    <span class="s2">&quot;WARNING: No data available for plotting information about the </span><span class="si">%s</span><span class="s2">s.&quot;</span>
+                    <span class="o">%</span> <span class="n">variant_container</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_remote_site_user_per_variant_container</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">variant_container</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing information about the number of request</span>
+<span class="sd">        per variant container (either case or project), mayor requesting</span>
+<span class="sd">        remote site and its mayor requesting user of each variant container</span>
+<span class="sd">        and the users proportion per remote site of the number of request in</span>
+<span class="sd">        percentage. Appends the created plot to the figures and its name to</span>
+<span class="sd">        file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param variant_container: string</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># read in data</span>
+        <span class="n">remote_sites</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">variant_containers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">users</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">variant_container</span><span class="p">])):</span>
+            <span class="k">for</span> <span class="n">var_container</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">variant_container</span><span class="p">][</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">variant_containers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_container</span><span class="p">)</span>
+                <span class="n">remote_sites</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;remote site&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">users</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;remote site user&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">case_project_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;remote site&quot;</span><span class="p">:</span> <span class="n">remote_sites</span><span class="p">,</span>
+                <span class="n">variant_container</span><span class="p">:</span> <span class="n">variant_containers</span><span class="p">,</span>
+                <span class="s2">&quot;remote site user&quot;</span><span class="p">:</span> <span class="n">users</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">variant_containers</span><span class="p">:</span>
+            <span class="c1"># count per remote site</span>
+            <span class="n">table_count_remote_site</span> <span class="o">=</span> <span class="n">case_project_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">variant_container</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;remote site&quot;</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;size&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># get maximum count identifier</span>
+            <span class="n">max_remote_site</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span>
+                        <span class="n">table_count_remote_site</span><span class="p">[</span>
+                            <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span> <span class="o">==</span> <span class="n">c</span>
+                        <span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">table_count_remote_site</span><span class="o">.</span><span class="n">index</span>
+            <span class="p">]</span>
+            <span class="c1"># get total counts</span>
+            <span class="n">total_call_counts</span> <span class="o">=</span> <span class="n">case_project_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">variant_container</span><span class="p">,</span> <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;size&quot;</span>
+            <span class="p">)</span>
+            <span class="c1"># get counts user per remote site</span>
+            <span class="n">table_count_user</span> <span class="o">=</span> <span class="n">case_project_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">variant_container</span><span class="p">,</span> <span class="s2">&quot;remote site&quot;</span><span class="p">],</span>
+                <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;remote site user&quot;</span><span class="p">,</span>
+                <span class="n">aggfunc</span><span class="o">=</span><span class="s2">&quot;size&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># get max requesting user per remote site and percentage</span>
+            <span class="n">max_user</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">table_count_user</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span>
+                    <span class="n">table_count_user</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">case</span><span class="p">,</span> <span class="n">remote_site</span><span class="p">)]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">case</span><span class="p">,</span> <span class="n">remote_site</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">total_call_counts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">max_remote_site</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">max_percentage</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="nb">round</span><span class="p">(</span>
+                        <span class="n">table_count_user</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">case</span><span class="p">,</span> <span class="n">remote_site</span><span class="p">)]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+                        <span class="o">/</span> <span class="n">table_count_user</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">case</span><span class="p">,</span> <span class="n">remote_site</span><span class="p">)]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+                        <span class="mi">2</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">case</span><span class="p">,</span> <span class="n">remote_site</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                        <span class="n">total_call_counts</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">max_remote_site</span>
+                    <span class="p">)</span>
+                <span class="p">],</span>
+                <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># create pivot table for plotting</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;total_call_count&quot;</span><span class="p">:</span> <span class="n">total_call_counts</span><span class="p">,</span>
+                    <span class="s2">&quot;Maximal requesting user per remote site&quot;</span><span class="p">:</span> <span class="n">max_user</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="c1"># sort table and plot top 15</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;total_call_count&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;Maximal requesting user per remote site&quot;</span><span class="p">,</span>
+                <span class="n">values</span><span class="o">=</span><span class="s2">&quot;total_call_count&quot;</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+                <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">variant_container</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">variant_container</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="c1"># add percentage per most often requesting user per remote site</span>
+            <span class="n">rects</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span>
+            <span class="k">for</span> <span class="n">rect</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">height</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">rects</span><span class="p">,</span>
+                <span class="p">[(</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">mp</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="s2">&quot;%&quot;</span><span class="p">))</span> <span class="k">for</span> <span class="n">mp</span> <span class="ow">in</span> <span class="n">max_percentage</span><span class="p">[:</span><span class="mi">15</span><span class="p">]],</span>
+                <span class="nb">sorted</span><span class="p">(</span><span class="n">total_call_counts</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="mi">15</span><span class="p">],</span>
+            <span class="p">):</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+                    <span class="n">rect</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">rect</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="n">height</span><span class="p">,</span>
+                    <span class="n">label</span><span class="p">,</span>
+                    <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                    <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+                <span class="s2">&quot;Number of requests per </span><span class="si">%s</span><span class="s2"> and percentage of top users per remote site&quot;</span>
+                <span class="o">%</span> <span class="n">variant_container</span>
+            <span class="p">)</span>
+            <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">&quot;requested_</span><span class="si">%s</span><span class="s2">s_per_remote_site_users.pdf&quot;</span> <span class="o">%</span> <span class="n">variant_container</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                    <span class="s2">&quot;WARNING: No data available for plotting information about the </span><span class="si">%s</span><span class="s2">s.&quot;</span>
+                    <span class="o">%</span> <span class="n">variant_container</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_access_limit_per_remote_site</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing information about the number of request per remote site</span>
+<span class="sd">        comparing status codes indicating how often a remote site tries to exceed its</span>
+<span class="sd">        access limits. Appends the created plot to the figures and its name to file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df_idx_remote_sites</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;status code&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="mi">200</span><span class="p">,</span> <span class="mi">403</span><span class="p">])]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span>
+            <span class="s2">&quot;remote site&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">df_idx_remote_sites</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                    <span class="s2">&quot;WARNING: No data available for plotting information about the access limits per remote site.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df_idx_remote_sites</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">df_idx_remote_sites</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s2">&quot;status code&quot;</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of requests&quot;</span><span class="p">,</span>
+                <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Remote site, Access limit&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># label each remote site with corresponding access limit</span>
+            <span class="n">xtick_labels</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">():</span>
+                <span class="n">label_text</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+                <span class="n">remote_site</span> <span class="o">=</span> <span class="n">RemoteSite</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">label_text</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">remote_site</span><span class="p">:</span>
+                    <span class="n">access_limit</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">access_limit</span> <span class="o">=</span> <span class="n">remote_site</span><span class="o">.</span><span class="n">access_limit</span>
+                <span class="n">xtick_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label_text</span><span class="p">,</span> <span class="n">access_limit</span><span class="p">))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">xtick_labels</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=</span><span class="mi">350</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+                <span class="s2">&quot;Number of by access limit restricted requests per remote site&quot;</span>
+            <span class="p">)</span>
+            <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Number_restricted_requests_remote_site.pdf&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_plot_table_top_requested_variants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">figures</span><span class="p">,</span> <span class="n">file_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a plot containing a table with the top ten requested variants.</span>
+<span class="sd">        Appends the created plot to the figures and its name to file names.</span>
+
+<span class="sd">        :param data: pandas DataFrame object</span>
+<span class="sd">        :param fig: matplotlib figure object</span>
+<span class="sd">        :param ax: matplotlib ax</span>
+<span class="sd">        :param figures: list of matplotlib figures objects</span>
+<span class="sd">        :param file_names: list of strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;request number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
+        <span class="c1"># create table for plotting</span>
+        <span class="n">df_table</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;chromosome&quot;</span><span class="p">,</span> <span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">,</span> <span class="s2">&quot;reference&quot;</span><span class="p">,</span> <span class="s2">&quot;alternative&quot;</span><span class="p">,</span> <span class="s2">&quot;release&quot;</span><span class="p">],</span>
+                <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s2">&quot;request number&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="o">.</span><span class="n">count</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;request number&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">df_table</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">WARNING</span><span class="p">(</span>
+                    <span class="s2">&quot;WARNING: No data available for plotting information about the top ten requested variants.&quot;</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># plot table</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">table</span><span class="p">(</span>
+                <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">df_table</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span>
+                <span class="n">colLabels</span><span class="o">=</span><span class="n">df_table</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+                <span class="n">rowLabels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                <span class="n">colColours</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gainsboro&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">7</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">auto_set_font_size</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">auto_set_column_width</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df_table</span><span class="o">.</span><span class="n">columns</span><span class="p">))))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Top 10 requested variants&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+            <span class="n">figures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;top_10_variants.pdf&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

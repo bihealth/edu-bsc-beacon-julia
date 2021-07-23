@@ -1,0 +1,401 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Beacon Schemas &mdash; Beacon 1.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Analyse Log Entries" href="analyse_log_entries.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Beacon
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="info.html">Welcome to Beacon’s documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installations and First Steps</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="beacon.html">Beacon</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="analyse_log_entries.html">Analyse Log Entries</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Beacon Schemas</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-queryresponse">beacon.beacon_schemas.QueryResponse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-allelerequest">beacon.beacon_schemas.AlleleRequest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-error">beacon.beacon_schemas.Error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-alleleresponse">beacon.beacon_schemas.AlleleResponse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-alleleresponseaccumulation">beacon.beacon_schemas.AlleleResponseAccumulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-inforesponse">beacon.beacon_schemas.InfoResponse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-datasetresponse">beacon.beacon_schemas.DatasetResponse</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#beacon-beacon-schemas-organizationresponse">beacon.beacon_schemas.OrganizationResponse</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variant_accumulation.html">Variant Accumulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="views.html">Views</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Beacon</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="beacon.html">Beacon</a> &raquo;</li>
+        
+      <li>Beacon Schemas</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/beacon_schemas.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="beacon-schemas">
+<h1><a class="toc-backref" href="#id1">Beacon Schemas</a><a class="headerlink" href="#beacon-schemas" title="Permalink to this headline">¶</a></h1>
+<p>Classes representing the JSON datastructures defined by the GA4GH Beacon protocol.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#beacon-schemas" id="id1">Beacon Schemas</a></p>
+<ul>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-queryresponse" id="id2">beacon.beacon_schemas.QueryResponse</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-allelerequest" id="id3">beacon.beacon_schemas.AlleleRequest</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-error" id="id4">beacon.beacon_schemas.Error</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-alleleresponse" id="id5">beacon.beacon_schemas.AlleleResponse</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-alleleresponseaccumulation" id="id6">beacon.beacon_schemas.AlleleResponseAccumulation</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-inforesponse" id="id7">beacon.beacon_schemas.InfoResponse</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-datasetresponse" id="id8">beacon.beacon_schemas.DatasetResponse</a></p></li>
+<li><p><a class="reference internal" href="#beacon-beacon-schemas-organizationresponse" id="id9">beacon.beacon_schemas.OrganizationResponse</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="beacon-beacon-schemas-queryresponse">
+<h2><a class="toc-backref" href="#id2">beacon.beacon_schemas.QueryResponse</a><a class="headerlink" href="#beacon-beacon-schemas-queryresponse" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.QueryResponse">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">QueryResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beacon_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allele_request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_allele_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#QueryResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.QueryResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>The QueryResponseObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.QueryResponse.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#QueryResponse.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.QueryResponse.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of QueryResponseObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-allelerequest">
+<h2><a class="toc-backref" href="#id3">beacon.beacon_schemas.AlleleRequest</a><a class="headerlink" href="#beacon-beacon-schemas-allelerequest" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.AlleleRequest">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">AlleleRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chromosome</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alternative</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">release</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#AlleleRequest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.AlleleRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>The AlleleRequestObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.AlleleRequest.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#AlleleRequest.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.AlleleRequest.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of AlleleRequestObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-error">
+<h2><a class="toc-backref" href="#id4">beacon.beacon_schemas.Error</a><a class="headerlink" href="#beacon-beacon-schemas-error" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.Error">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">Error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_message</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#Error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ErrorObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.Error.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#Error.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.Error.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of ErrorObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-alleleresponse">
+<h2><a class="toc-backref" href="#id5">beacon.beacon_schemas.AlleleResponse</a><a class="headerlink" href="#beacon-beacon-schemas-alleleresponse" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.AlleleResponse">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">AlleleResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coarse_phenotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phenotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#AlleleResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.AlleleResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>An extended AlleleResponseObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.AlleleResponse.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#AlleleResponse.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.AlleleResponse.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of AlleleResponseObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-alleleresponseaccumulation">
+<h2><a class="toc-backref" href="#id6">beacon.beacon_schemas.AlleleResponseAccumulation</a><a class="headerlink" href="#beacon-beacon-schemas-alleleresponseaccumulation" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.AlleleResponseAccumulation">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">AlleleResponseAccumulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coarse_phenotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phenotype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#AlleleResponseAccumulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.AlleleResponseAccumulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Case for getting and collecting the variant data depending on the visibility level defined by a consortium.</p>
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-inforesponse">
+<h2><a class="toc-backref" href="#id7">beacon.beacon_schemas.InfoResponse</a><a class="headerlink" href="#beacon-beacon-schemas-inforesponse" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.InfoResponse">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">InfoResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beacon_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_dict_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">organization_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#InfoResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.InfoResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>The InfoResponseObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.InfoResponse.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#InfoResponse.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.InfoResponse.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of InfoResponseObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-datasetresponse">
+<h2><a class="toc-backref" href="#id8">beacon.beacon_schemas.DatasetResponse</a><a class="headerlink" href="#beacon-beacon-schemas-datasetresponse" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.DatasetResponse">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">DatasetResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">assembly_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_date_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_date_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#DatasetResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.DatasetResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>The DatasetResponseObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.DatasetResponse.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#DatasetResponse.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.DatasetResponse.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of DatasetResponseObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="beacon-beacon-schemas-organizationresponse">
+<h2><a class="toc-backref" href="#id9">beacon.beacon_schemas.OrganizationResponse</a><a class="headerlink" href="#beacon-beacon-schemas-organizationresponse" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.OrganizationResponse">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">beacon.beacon_schemas.</span></span><span class="sig-name descname"><span class="pre">OrganizationResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contact_url</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#OrganizationResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.OrganizationResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>The OrganizationResponseObject defined by the beacon protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="beacon.beacon_schemas.OrganizationResponse.create_dict">
+<span class="sig-name descname"><span class="pre">create_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/beacon/beacon_schemas.html#OrganizationResponse.create_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#beacon.beacon_schemas.OrganizationResponse.create_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary for the JSONResponse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict of OrganizationResponseObject</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="models.html" class="btn btn-neutral float-right" title="Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="analyse_log_entries.html" class="btn btn-neutral float-left" title="Analyse Log Entries" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Julia Mellert.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

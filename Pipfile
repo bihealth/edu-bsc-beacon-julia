@@ -18,6 +18,8 @@ attr = "*"
 attrs = "*"
 typing = "*"
 sphinx = "*"
+requests = "*"
+autodoc = "*"
 
 [dev-packages]
 
