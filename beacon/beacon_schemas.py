@@ -27,6 +27,7 @@ class QueryResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of QueryResponseObject
         """
         if not self.dataset_allele_response:
@@ -57,6 +58,7 @@ class AlleleRequest:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of AlleleRequestObject
         """
         return dict(
@@ -81,6 +83,7 @@ class Error:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of ErrorObject
         """
         return dict(errorCode=self.error_code, errorMessage=self.error_message)
@@ -104,6 +107,7 @@ class AlleleResponse(object):
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of AlleleResponseObject
         """
         allele_response_dict = {
@@ -147,6 +151,7 @@ class InfoResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of InfoResponseObject
         """
         return dict(
@@ -173,6 +178,7 @@ class DatasetResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of DatasetResponseObject
         """
         return dict(
@@ -197,6 +203,7 @@ class OrganizationResponse:
     def create_dict(self):
         """
         Creates a dictionary for the JSONResponse.
+        
         :return: dict of OrganizationResponseObject
         """
         return dict(id=self.id, name=self.name, contactUrl=self.contact_url)
